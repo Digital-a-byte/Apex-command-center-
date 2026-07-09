@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>APEX — Exam Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   APEX DESIGN TOKENS
+   ============================================================ */
+:root{
+  --bg: #0A0B10;
+  --bg-soft: #0E1018;
+  --bg-elevated: #13151F;
+  --glass: rgba(255,255,255,0.045);
+  --glass-hover: rgba(255,255,255,0.075);
+  --glass-border: rgba(255,255,255,0.09);
+  --glass-strong: rgba(255,255,255,0.13);
+
+  --text-1: #F3F4F8;
+  --text-2: #9A9DB0;
+  --text-3: #5C5F72;
+
+  --physics: #4F8EF7;
+  --physics-dim: rgba(79,142,247,0.15);
+  --chemistry: #2DD4A7;
+  --chemistry-dim: rgba(45,212,167,0.15);
+  --maths: #F5B942;
+  --maths-dim: rgba(245,185,66,0.15);
+  --biology: #6FCF57;
+  --biology-dim: rgba(111,207,87,0.15);
+
+  --brand: #7C6CF0;
+  --brand-2: #C86DD7;
+  --brand-grad: linear-gradient(135deg, var(--brand), var(--brand-2));
+
+  --danger: #F0576B;
+  --danger-dim: rgba(240,87,107,0.15);
+  --success: #3DDC97;
+  --success-dim: rgba(61,220,151,0.15);
+  --warning: #F5B942;
+  --warning-dim: rgba(245,185,66,0.15);
+  --boardprep: #B98CF5;
+  --boardprep-dim: rgba(185,140,245,0.15);
+  --studied: #4F8EF7;
+  --studied-dim: rgba(79,142,247,0.15);
+
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-1: 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-2: 0 16px 48px rgba(0,0,0,0.45);
+  --sidebar-w: 236px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background: radial-gradient(1200px 800px at 85% -10%, rgba(124,108,240,0.10), transparent 60%),
+              radial-gradient(1000px 700px at -10% 100%, rgba(45,212,167,0.06), transparent 60%),
+              var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+::selection{ background: var(--brand); color: #fff; }
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background: var(--glass-strong); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover{ background: var(--brand); }
+
+a{ color:inherit; text-decoration:none; }
+button{ font-family: inherit; cursor:pointer; }
+input, textarea, select{ font-family: inherit; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app{ display:flex; min-height:100vh; }
+
+/* ---- Sidebar ---- */
+.sidebar{
+  width: var(--sidebar-w);
+  flex-shrink:0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--glass-border);
+  display:flex; flex-direction:column;
+  position: fixed; top:0; left:0; bottom:0;
+  z-index: 200;
+  transition: transform .25s ease;
+}
+.brand-mark{
+  display:flex; align-items:center; gap:10px;
+  padding: 22px 20px 18px;
+  font-family: var(--font-display);
+  font-weight:700; font-size:19px; letter-spacing:0.5px;
+}
+.brand-mark .dot{
+  width:10px;height:10px;border-radius:50%;
+  background: var(--brand-grad);
+  box-shadow: 0 0 12px var(--brand);
+  flex-shrink:0;
+}
+.brand-mark small{ display:block; font-family:var(--font-body); font-weight:500; font-size:10.5px; color:var(--text-3); letter-spacing:1.5px; margin-top:1px; }
+
+.nav{ flex:1; overflow-y:auto; padding: 6px 12px; }
+.nav-group-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-3); margin:16px 10px 6px; font-weight:600; }
+.nav-item{
+  display:flex; align-items:center; gap:11px;
+  padding: 9px 12px; margin-bottom: 2px;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: 13.5px; font-weight:500;
+  transition: background .15s, color .15s;
+  position:relative;
+}
+.nav-item svg{ width:17px; height:17px; flex-shrink:0; opacity:.85; }
+.nav-item:hover{ background: var(--glass); color: var(--text-1); }
+.nav-item.active{ background: var(--glass-hover); color: var(--text-1); }
+.nav-item.active::before{
+  content:''; position:absolute; left:-12px; top:50%; transform:translateY(-50%);
+  width:3px; height:16px; border-radius:3px; background: var(--brand-grad);
+}
+.nav-item .badge-count{
+  margin-left:auto; font-family:var(--font-mono); font-size:10.5px;
+  background: var(--danger-dim); color: var(--danger); padding:1px 6px; border-radius:8px;
+  font-weight:600;
+}
+
+.sidebar-footer{ padding: 12px; border-top:1px solid var(--glass-border); }
+.streak-chip{
+  display:flex; align-items:center; gap:8px;
+  background: var(--glass); border:1px solid var(--glass-border);
+  border-radius: var(--r-sm); padding: 9px 11px;
+  font-size:12.5px; color:var(--text-2);
+}
+.streak-chip .flame{ font-size:15px; }
+.streak-chip b{ color:var(--text-1); font-family:var(--font-mono); }
+
+/* ---- Main ---- */
+.main{
+  margin-left: var(--sidebar-w);
+  flex:1;
+  min-width:0;
+  display:flex; flex-direction:column;
+}
+
+/* ---- Topbar / countdown command bar ---- */
+.topbar{
+  position: sticky; top:0; z-index:150;
+  background: rgba(10,11,16,0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 12px 28px;
+  display:flex; align-items:center; gap:18px;
+}
+.topbar .hamburger{ display:none; }
+.search-box{
+  flex:1; max-width: 340px;
+  display:flex; align-items:center; gap:8px;
+  background: var(--glass); border:1px solid var(--glass-border);
+  border-radius: var(--r-pill); padding: 8px 14px;
+  color: var(--text-2); position:relative;
+}
+.search-box svg{ width:15px;height:15px; flex-shrink:0; opacity:.7; }
+.search-box input{
+  background:none; border:none; outline:none; color:var(--text-1);
+  font-size:13px; width:100%;
+}
+.search-results{
+  position:absolute; top:calc(100% + 8px); left:0; right:0;
+  background: var(--bg-elevated); border:1px solid var(--glass-border);
+  border-radius: var(--r-md); box-shadow: var(--shadow-2);
+  max-height: 360px; overflow-y:auto; padding:6px; z-index:300;
+  display:none;
+}
+.search-results.show{ display:block; }
+.search-result-item{ padding:9px 10px; border-radius: var(--r-xs); font-size:12.5px; cursor:pointer; }
+.search-result-item:hover{ background: var(--glass); }
+.search-result-item .sr-tag{ font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
+
+.countdown-strip{ display:flex; gap:10px; flex:2; overflow-x:auto; }
+.cd-card{
+  flex:1; min-width: 128px;
+  background: var(--glass); border:1px solid var(--glass-border);
+  border-radius: var(--r-md); padding:8px 12px;
+  position:relative; overflow:hidden;
+}
+.cd-card::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background: var(--cd-color, var(--brand));
+}
+.cd-label{ font-size:9.5px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); font-weight:600; }
+.cd-days{ font-family: var(--font-mono); font-size:20px; font-weight:700; color: var(--cd-color, var(--brand)); line-height:1.25; }
+.cd-days span{ font-size:10.5px; color:var(--text-2); font-weight:500; margin-left:3px; }
+.cd-clock{ font-family:var(--font-mono); font-size:10px; color:var(--text-3); }
+
+.topbar-actions{ display:flex; align-items:center; gap:10px; }
+.icon-btn{
+  width:34px;height:34px; border-radius: var(--r-sm);
+  background: var(--glass); border:1px solid var(--glass-border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-2); position:relative; flex-shrink:0;
+  transition: background .15s, color .15s;
+}
+.icon-btn:hover{ background: var(--glass-hover); color:var(--text-1); }
+.icon-btn svg{ width:16px;height:16px; }
+.icon-btn .dot-alert{
+  position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%;
+  background: var(--danger); box-shadow: 0 0 0 2px var(--bg-soft);
+}
+.notif-panel{
+  position:absolute; top:56px; right:28px; width:340px; max-height:420px; overflow-y:auto;
+  background: var(--bg-elevated); border:1px solid var(--glass-border);
+  border-radius: var(--r-md); box-shadow: var(--shadow-2); padding:8px; z-index:400; display:none;
+}
+.notif-panel.show{ display:block; }
+.notif-item{ padding:10px; border-radius:var(--r-xs); font-size:12.5px; display:flex; gap:9px; align-items:flex-start; }
+.notif-item:hover{ background: var(--glass); }
+.notif-dot{ width:7px;height:7px;border-radius:50%; margin-top:5px; flex-shrink:0; }
+.notif-item b{ display:block; font-size:12.5px; color:var(--text-1); }
+.notif-item span{ color:var(--text-3); font-size:11px; }
+
+/* ---- View container ---- */
+.view-wrap{ padding: 24px 28px 60px; max-width: 1400px; width:100%; margin:0 auto; }
+.view{ display:none; animation: fadeUp .35s ease; }
+.view.active{ display:block; }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+.view-header{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+.view-title{ font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.3px; }
+.view-sub{ color:var(--text-2); font-size:13px; margin-top:4px; }
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+.card{
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  backdrop-filter: blur(10px);
+}
+.card-title{ font-size:13px; font-weight:600; color:var(--text-1); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.card-title .tag{ margin-left:auto; }
+
+.grid{ display:grid; gap:16px; }
+.grid-4{ grid-template-columns: repeat(4,1fr); }
+.grid-3{ grid-template-columns: repeat(3,1fr); }
+.grid-2{ grid-template-columns: repeat(2,1fr); }
+.grid-12{ grid-template-columns: repeat(12,1fr); }
+@media (max-width:1100px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);} .grid-12 > *{ grid-column: span 12 !important; } }
+@media (max-width:640px){ .grid-4,.grid-3,.grid-2{grid-template-columns:1fr;} }
+
+.stat-card .stat-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.stat-icon{ width:32px;height:32px;border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.stat-icon svg{ width:16px;height:16px; }
+.stat-value{ font-family:var(--font-mono); font-size:26px; font-weight:700; }
+.stat-label{ font-size:12px; color:var(--text-2); margin-top:2px; }
+.stat-delta{ font-size:11px; margin-top:6px; font-weight:600; }
+.stat-delta.up{ color: var(--success); }
+.stat-delta.down{ color: var(--danger); }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding: 9px 16px; border-radius: var(--r-sm);
+  font-size: 13px; font-weight:600; border:1px solid transparent;
+  transition: filter .15s, transform .1s, background .15s;
+}
+.btn:active{ transform: scale(0.97); }
+.btn svg{ width:14px;height:14px; }
+.btn-primary{ background: var(--brand-grad); color:#fff; box-shadow: 0 4px 18px rgba(124,108,240,0.35); }
+.btn-primary:hover{ filter: brightness(1.08); }
+.btn-ghost{ background: var(--glass); border-color: var(--glass-border); color: var(--text-1); }
+.btn-ghost:hover{ background: var(--glass-hover); }
+.btn-sm{ padding:6px 11px; font-size:12px; }
+.btn-danger{ background: var(--danger-dim); color: var(--danger); }
+.btn-success{ background: var(--success-dim); color: var(--success); }
+.btn-block{ width:100%; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.tag{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10.5px; font-weight:600; padding:3px 9px; border-radius: var(--r-pill);
+  text-transform:uppercase; letter-spacing:.4px;
+}
+.tag-physics{ background:var(--physics-dim); color:var(--physics); }
+.tag-chemistry{ background:var(--chemistry-dim); color:var(--chemistry); }
+.tag-maths{ background:var(--maths-dim); color:var(--maths); }
+.tag-biology{ background:var(--biology-dim); color:var(--biology); }
+.tag-danger{ background:var(--danger-dim); color:var(--danger); }
+.tag-success{ background:var(--success-dim); color:var(--success); }
+.tag-warning{ background:var(--warning-dim); color:var(--warning); }
+.tag-neutral{ background:var(--glass-strong); color:var(--text-2); }
+.tag-brand{ background: rgba(124,108,240,0.18); color: var(--brand); }
+
+input[type=text], input[type=number], input[type=date], input[type=time], textarea, select{
+  width:100%; background: var(--bg-soft); border:1px solid var(--glass-border);
+  color: var(--text-1); padding:10px 12px; border-radius: var(--r-sm); font-size:13px; outline:none;
+  transition: border-color .15s;
+}
+input:focus, textarea:focus, select:focus{ border-color: var(--brand); }
+label{ font-size:11.5px; color:var(--text-2); font-weight:600; margin-bottom:5px; display:block; text-transform:uppercase; letter-spacing:.4px; }
+.field{ margin-bottom:14px; }
+textarea{ resize:vertical; min-height:90px; line-height:1.5; }
+
+.progress-bar{ height:7px; border-radius: var(--r-pill); background: var(--glass-strong); overflow:hidden; }
+.progress-bar > div{ height:100%; border-radius: var(--r-pill); background: var(--brand-grad); transition: width .4s ease; }
+
+.ring{ position:relative; width:56px;height:56px; flex-shrink:0; }
+.ring svg{ transform: rotate(-90deg); }
+.ring text{ display:none; }
+.ring-label{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:12px; font-weight:700; }
+
+.empty-state{ text-align:center; padding: 40px 20px; color: var(--text-3); }
+.empty-state svg{ width:38px;height:38px; margin-bottom:12px; opacity:.5; }
+.empty-state b{ display:block; color:var(--text-2); font-size:13.5px; margin-bottom:4px; }
+.empty-state p{ font-size:12px; }
+
+.divider{ height:1px; background: var(--glass-border); margin: 16px 0; border:none; }
+
+/* Modal */
+.modal-overlay{
+  position:fixed; inset:0; background: rgba(5,6,10,0.65); backdrop-filter: blur(4px);
+  z-index: 1000; display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.show{ display:flex; }
+.modal{
+  background: var(--bg-elevated); border:1px solid var(--glass-border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-2);
+  width:100%; max-width:560px; max-height:88vh; overflow-y:auto;
+  padding: 22px 24px; animation: modalIn .25s ease;
+}
+.modal.modal-lg{ max-width: 780px; }
+@keyframes modalIn{ from{opacity:0; transform: translateY(12px) scale(.98);} to{opacity:1; transform:none;} }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.modal-head h3{ font-family:var(--font-display); font-size:18px; font-weight:700; }
+.modal-close{ width:28px;height:28px; border-radius:8px; background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-2); }
+.modal-close:hover{ background:var(--glass-hover); color:#fff; }
+
+/* Toasts */
+.toast-stack{ position:fixed; bottom:22px; right:22px; z-index:2000; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+.toast{
+  background: var(--bg-elevated); border:1px solid var(--glass-border); border-left:3px solid var(--brand);
+  border-radius: var(--r-sm); padding:12px 16px; box-shadow: var(--shadow-2);
+  font-size:12.5px; max-width:320px; animation: toastIn .3s ease;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.toast b{ display:block; margin-bottom:2px; }
+.toast.success{ border-left-color: var(--success); }
+.toast.danger{ border-left-color: var(--danger); }
+.toast.xp{ border-left-color: var(--maths); }
+@keyframes toastIn{ from{opacity:0; transform:translateX(24px);} to{opacity:1;transform:none;} }
+
+/* Calendar */
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-nav{ display:flex; gap:6px; }
+.cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:6px; }
+.cal-dow{ text-align:center; font-size:10.5px; color:var(--text-3); font-weight:600; text-transform:uppercase; padding-bottom:4px; }
+.cal-cell{
+  min-height:78px; border-radius: var(--r-sm); background: var(--bg-soft);
+  border: 1px solid var(--glass-border); padding:6px 7px; position:relative; cursor:pointer;
+  transition: border-color .15s, background .15s;
+}
+.cal-cell:hover{ border-color: var(--brand); }
+.cal-cell.empty{ background:transparent; border:none; cursor:default; }
+.cal-cell.today{ border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+.cal-daynum{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-2); }
+.cal-dots{ display:flex; flex-wrap:wrap; gap:3px; margin-top:6px; position:absolute; bottom:7px; left:7px; right:7px; }
+.cal-dot{ width:6px;height:6px;border-radius:50%; }
+.cal-legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; }
+.cal-legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-2); }
+.cal-legend-item .dot{ width:8px;height:8px;border-radius:50%; }
+
+/* Flashcards */
+.flip-card{ perspective: 1200px; height:190px; cursor:pointer; }
+.flip-inner{ position:relative; width:100%; height:100%; transition: transform .5s; transform-style:preserve-3d; }
+.flip-card.flipped .flip-inner{ transform: rotateY(180deg); }
+.flip-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius: var(--r-md);
+  border:1px solid var(--glass-border); padding:16px; display:flex; flex-direction:column;
+  background: var(--bg-soft);
+}
+.flip-front{ }
+.flip-back{ transform: rotateY(180deg); background: rgba(124,108,240,0.08); }
+.flip-face .fc-label{ font-size:9.5px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); font-weight:700; margin-bottom:8px; }
+.flip-face .fc-text{ font-size:13px; line-height:1.5; overflow-y:auto; flex:1; }
+.flip-face .fc-hint{ font-size:10.5px; color:var(--text-3); text-align:center; margin-top:8px; }
+
+/* Table */
+.table-wrap{ overflow-x:auto; }
+table.data-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+table.data-table th{ text-align:left; padding:9px 10px; color:var(--text-3); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:.5px; border-bottom:1px solid var(--glass-border); white-space:nowrap; }
+table.data-table td{ padding:10px 10px; border-bottom:1px solid var(--glass-border); vertical-align:middle; }
+table.data-table tr:last-child td{ border-bottom:none; }
+table.data-table tr:hover td{ background: var(--glass); }
+.chk{ width:17px;height:17px; accent-color: var(--brand); cursor:pointer; }
+.chapter-name-input{
+  background:transparent; border:1px solid transparent; padding:6px 7px; width:100%;
+  font-size:12.5px; color:var(--text-1); border-radius:var(--r-xs);
+}
+.chapter-name-input:hover{ border-color: var(--glass-border); }
+.chapter-name-input:focus{ background: var(--bg-soft); border-color: var(--brand); }
+
+/* Timer big display */
+.timer-display{ font-family:var(--font-mono); font-size:56px; font-weight:700; text-align:center; letter-spacing:1px; }
+.timer-ring-wrap{ display:flex; justify-content:center; padding:10px 0 20px; }
+
+/* Heatmap */
+.heatmap{ display:grid; grid-template-columns: repeat(26, 1fr); gap:3px; }
+.heatmap-cell{ aspect-ratio:1; border-radius:3px; background: var(--glass-strong); }
+
+/* Tabs */
+.tabs{ display:flex; gap:4px; background: var(--glass); border:1px solid var(--glass-border); border-radius: var(--r-pill); padding:3px; width:fit-content; margin-bottom:18px; }
+.tab-btn{ padding:7px 16px; border-radius: var(--r-pill); font-size:12.5px; font-weight:600; color:var(--text-2); }
+.tab-btn.active{ background: var(--brand-grad); color:#fff; }
+
+/* Priority list */
+.weak-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--glass-border); }
+.weak-row:last-child{ border-bottom:none; }
+.weak-bar{ flex:1; }
+
+/* Mobile */
+.mobile-toggle{ display:none; }
+@media (max-width: 900px){
+  .sidebar{ transform: translateX(-100%); }
+  .sidebar.open{ transform:none; }
+  .main{ margin-left:0; }
+  .mobile-toggle{ display:flex; }
+  .countdown-strip{ display:none; }
+  .view-wrap{ padding:18px 16px 50px; }
+  .grid-4, .grid-3, .grid-2{ grid-template-columns:1fr; }
+}
+.sidebar-scrim{ position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:190; display:none; }
+.sidebar-scrim.show{ display:block; }
+
+/* Accent theme overrides (set via data-accent on body) */
+body[data-accent="emerald"] { --brand:#2DD4A7; --brand-2:#4F8EF7; }
+body[data-accent="amber"] { --brand:#F5B942; --brand-2:#F0576B; }
+body[data-accent="rose"] { --brand:#F0576B; --brand-2:#C86DD7; }
+
+.svg-icon{ width:16px; height:16px; }
+
+/* ============================================================
+   POLISH PASS — softer depth + gentle interactivity
+   ============================================================ */
+.card{ box-shadow: var(--shadow-1); transition: border-color .2s, transform .2s, box-shadow .2s; }
+.stat-card, .cd-card{ transition: transform .2s ease, border-color .2s ease; }
+.stat-card:hover{ transform: translateY(-2px); border-color: var(--glass-strong); }
+.cd-card{ box-shadow: var(--shadow-1); }
+.cd-card:hover{ transform: translateY(-2px); }
+.view-title{ letter-spacing:-0.4px; }
+.card-title{ letter-spacing:0.1px; }
+
+/* ============================================================
+   ONBOARDING — track picker
+   ============================================================ */
+.onboard-overlay{
+  position: fixed; inset:0; z-index: 5000; display:none;
+  background: radial-gradient(1100px 750px at 80% -10%, rgba(124,108,240,0.16), transparent 60%),
+              radial-gradient(900px 650px at 10% 110%, rgba(45,212,167,0.10), transparent 60%),
+              var(--bg);
+  align-items:center; justify-content:center; padding: 30px;
+  overflow-y:auto;
+}
+.onboard-overlay.show{ display:flex; }
+.onboard-wrap{ max-width: 780px; width:100%; text-align:center; animation: fadeUp .5s ease; margin: auto; }
+.onboard-mark{ display:inline-flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:16px; letter-spacing:1px; color:var(--text-2); margin-bottom:28px; }
+.onboard-mark .dot{ width:9px;height:9px;border-radius:50%; background:var(--brand-grad); box-shadow:0 0 12px var(--brand); }
+.onboard-title{ font-family:var(--font-display); font-size:32px; font-weight:700; letter-spacing:-0.6px; margin-bottom:10px; }
+.onboard-sub{ color:var(--text-2); font-size:14px; margin-bottom:36px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6; }
+.onboard-cards{ display:grid; grid-template-columns: 1fr 1fr; gap:18px; text-align:left; }
+@media (max-width:640px){ .onboard-cards{ grid-template-columns:1fr; } .onboard-title{ font-size:24px; } }
+.track-card{
+  background: var(--glass); border:1px solid var(--glass-border); border-radius: var(--r-lg);
+  padding: 28px 24px; cursor:pointer; transition: border-color .2s, transform .2s, background .2s;
+  box-shadow: var(--shadow-1);
+}
+.track-card:hover{ transform: translateY(-4px); border-color: var(--track-color); background: var(--glass-hover); }
+.track-card .tc-icon{ width:46px;height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; background: var(--track-dim); }
+.track-card .tc-title{ font-family:var(--font-display); font-size:20px; font-weight:700; margin-bottom:4px; }
+.track-card .tc-tagline{ font-size:12px; color: var(--track-color); font-weight:600; margin-bottom:14px; }
+.track-card .tc-subjects{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.track-card .tc-cta{ font-size:12.5px; font-weight:600; color:var(--text-1); display:flex; align-items:center; gap:6px; }
+.track-card .tc-cta svg{ width:14px;height:14px; transition: transform .2s; }
+.track-card:hover .tc-cta svg{ transform: translateX(4px); }
+</style>
+</head>
+<body data-accent="violet">
+
+<div class="app">
+  <div class="sidebar-scrim" id="scrim"></div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <span class="dot"></span>
+      <span>APEX
+        <small id="brandSubtitle">EXAM COMMAND CENTER</small>
+      </span>
+    </div>
+    <nav class="nav" id="navList"></nav>
+    <div class="sidebar-footer">
+      <div class="streak-chip" style="margin-bottom:8px;">
+        <span class="flame">🔥</span>
+        <span><b id="streakVal">0</b> day streak</span>
+      </div>
+      <div class="streak-chip" style="font-size:11px; color:var(--text-3); cursor:pointer;" onclick="navigateTo('settings')" title="Account settings">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;"></span>
+        <span id="sidebarAccountEmail" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="icon-btn mobile-toggle" id="hamburger" aria-label="Menu">
+        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="globalSearch" placeholder="Search chapters, notes, tests, mistakes…">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="countdown-strip" id="countdownStrip"></div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="notifBtn">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+          <span class="dot-alert" id="notifDot" style="display:none;"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel"></div>
+      </div>
+    </div>
+
+    <div class="view-wrap" id="viewWrap"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="onboard-overlay" id="authOverlay">
+  <div class="onboard-wrap" style="max-width:400px;">
+    <div class="onboard-mark"><span class="dot"></span> APEX</div>
+    <h1 class="onboard-title" id="authTitle" style="font-size:26px;">Sign in</h1>
+    <p class="onboard-sub" style="margin-bottom:24px;">Your study data is tied to your account — sign in from any device to pick up where you left off.</p>
+    <div class="card" style="text-align:left;">
+      <div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.com" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password"></div>
+      <div id="authError" style="display:none; font-size:12.5px; color:var(--danger); background:var(--danger-dim); padding:9px 12px; border-radius:var(--r-sm); margin-bottom:14px;"></div>
+      <button class="btn btn-primary btn-block" id="authSubmitBtn">Sign in</button>
+      <div style="text-align:center; margin-top:16px; font-size:12.5px; color:var(--text-2);">
+        <span id="authToggleText">Don't have an account?</span>
+        <a href="#" id="authToggleLink" style="color:var(--brand); font-weight:600;">Create one</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="onboard-overlay" id="onboardOverlay">
+  <div class="onboard-wrap">
+    <div class="onboard-mark"><span class="dot"></span> APEX</div>
+    <h1 class="onboard-title">Which exam are you preparing for?</h1>
+    <p class="onboard-sub">This tunes your syllabus, subjects, countdowns and analytics to match. You can switch anytime in Settings.</p>
+    <div class="onboard-cards" id="onboardCards"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ============================================================
+   APEX — CONSTANTS & SYLLABUS DATA
+   ============================================================ */
+const SYLLABUS = {
+  Physics: ["Units and Measurements","Kinematics","Laws of Motion","Work Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory of Gases","Oscillations","Waves","Electrostatics","Current Electricity","Magnetic Effects of Current","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"],
+  Chemistry: ["Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","States of Matter","Thermodynamics","Equilibrium","Redox Reactions","Hydrogen","The s-Block Elements","The p-Block Elements","Organic Chemistry Basic Principles","Hydrocarbons","Solid State","Solutions","Electrochemistry","Chemical Kinetics","Surface Chemistry","d and f Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols Phenols and Ethers","Aldehydes Ketones and Carboxylic Acids","Amines","Biomolecules","Polymers","Chemistry in Everyday Life"],
+  Maths: ["Sets Relations and Functions","Complex Numbers","Quadratic Equations","Sequences and Series","Permutations and Combinations","Binomial Theorem","Trigonometric Functions","Straight Lines","Conic Sections","Introduction to 3D Geometry","Limits and Derivatives","Statistics","Probability","Inverse Trigonometric Functions","Matrices","Determinants","Continuity and Differentiability","Applications of Derivatives","Integrals","Applications of Integrals","Differential Equations","Vector Algebra","Three Dimensional Geometry","Linear Programming"]
+};
+const SUBJECT_COLOR = { Physics:"var(--physics)", Chemistry:"var(--chemistry)", Maths:"var(--maths)", Biology:"var(--biology)" };
+const SUBJECT_TAGCLASS = { Physics:"tag-physics", Chemistry:"tag-chemistry", Maths:"tag-maths", Biology:"tag-biology" };
+const SUBJECT_HEX = { Physics:"#4F8EF7", Chemistry:"#2DD4A7", Maths:"#F5B942", Biology:"#6FCF57" };
+
+const BIOLOGY_CHAPTERS = ["The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation"];
+const SYLLABUS_NEET = { Physics: SYLLABUS.Physics, Chemistry: SYLLABUS.Chemistry, Biology: BIOLOGY_CHAPTERS };
+
+const TRACK_CONFIG = {
+  JEE: {
+    label: 'JEE', tagline: 'Engineering · IITs & NITs',
+    fullTitle: 'JEE Command Center',
+    syllabus: SYLLABUS,
+    examDates: { "JEE Main Jan": "2027-01-24", "JEE Main April": "2027-04-04", "Boards": "2027-02-15", "JEE Advanced": "2027-05-18" },
+    examColors: { "JEE Main Jan":"var(--brand)", "JEE Main April":"var(--physics)", "Boards":"var(--maths)", "JEE Advanced":"var(--danger)" },
+    defaultMaxMarks: 300, scoreLabel: 'Predicted Percentile*',
+  },
+  NEET: {
+    label: 'NEET', tagline: 'Medical · MBBS & BDS',
+    fullTitle: 'NEET Command Center',
+    syllabus: SYLLABUS_NEET,
+    examDates: { "Boards": "2027-02-15", "NEET UG": "2027-05-03" },
+    examColors: { "Boards":"var(--maths)", "NEET UG":"var(--biology)" },
+    defaultMaxMarks: 720, scoreLabel: 'Score Trend Index*',
+  }
+};
+
+const SOURCE_KEYWORDS = { NCERT:["ncert"], PYQ:["pyq","previous year","past year"], Module:["module","coaching","dpp","sheet"], Mock:["mock","test series","full test"], Coaching:["coaching","lecture","class"] };
+const DIFF_KEYWORDS = { Hard:["hard","tough","difficult","confusing"], Easy:["easy","simple","quick"] };
+
+const QUOTES = [
+"Discipline beats motivation on the days motivation doesn't show up.",
+"Every solved problem is a rank climbed.",
+"You don't need to feel ready. You need to start.",
+"The syllabus doesn't care how you feel — so show up anyway.",
+"Small consistent reps beat rare heroic sessions.",
+"Revision is where marks are actually won.",
+"Your competition is asleep right now. Take the hour.",
+"Mistakes today are marks saved in January.",
+"One focused hour beats three distracted ones.",
+"Boards and entrance exams reward the same thing: reps."
+];
+
+const DEFAULT_STATE = () => ({
+  version: 1,
+  profile: { name: "Aspirant", xp: 0, coins: 0, streak: 0, lastStudyDate: null },
+  examDates: JSON.parse(JSON.stringify(TRACK_CONFIG.JEE.examDates)), // fallback until a track is chosen
+  revisionIntervals: [1,3,7,30],
+  syllabus: JSON.parse(JSON.stringify(TRACK_CONFIG.JEE.syllabus)), // editable copy — add/rename/delete/reorder chapters live here
+  logs: [],            // study logs
+  revisions: [],       // {id, logId, subject, chapter, dueDate, status: pending/done/missed, doneDate}
+  flashcards: [],       // {id, logId, subject, chapter, q, a, difficulty, nextReview}
+  notes: [],           // {id, logId, subject, chapter, content(html), createdAt}
+  tests: [],           // test entries
+  chapterProgress: {},  // key `${subject}::${chapter}` -> {lecture,notes,ncert,module,pyq,rev1..4,mock,mastered}
+  timeSessions: [],     // {id, subject, start, end, durationSec, type: manual/pomodoro}
+  goals: { daily:[], weekly:[], monthly:[], yearly:[], life:[] },
+  achievements: {},      // key -> unlocked timestamp
+  settings: { accent:"violet", theme:"dark", dailyHourTarget: 6, track: null },
+  moodLogs: [], habitLogs: {}, // simple bonus trackers keyed by date
+  lastNotifCheck: null,
+});
+
+let state = null;
+let saveTimer = null;
+
+function deepMerge(base, incoming){
+  if (typeof incoming !== 'object' || incoming === null) return base;
+  const out = Array.isArray(base) ? incoming : {...base};
+  if (!Array.isArray(base) && typeof base === 'object'){
+    for (const k in base){
+      if (incoming[k] === undefined) out[k] = base[k];
+      else if (typeof base[k] === 'object' && base[k] !== null && !Array.isArray(base[k]) && typeof incoming[k]==='object') out[k] = deepMerge(base[k], incoming[k]);
+      else out[k] = incoming[k];
+    }
+    for (const k in incoming){ if (out[k]===undefined) out[k] = incoming[k]; }
+  }
+  return out;
+}
+
+/* ============================================================
+   AUTH + SERVER-BACKED STORAGE
+   ============================================================ */
+let authToken = localStorage.getItem('apex_token') || null;
+let authEmail = localStorage.getItem('apex_email') || null;
+
+async function apiCall(path, opts={}){
+  const headers = Object.assign({ 'Content-Type':'application/json' }, opts.headers||{});
+  if (authToken) headers['Authorization'] = 'Bearer '+authToken;
+  const res = await fetch(path, { ...opts, headers });
+  let body = null;
+  try{ body = await res.json(); }catch(e){}
+  if (!res.ok){ const err = new Error((body&&body.error)||('Request failed ('+res.status+')')); err.status=res.status; throw err; }
+  return body;
+}
+function setAuth(token, email){
+  authToken = token; authEmail = email;
+  localStorage.setItem('apex_token', token);
+  localStorage.setItem('apex_email', email);
+}
+function clearAuth(){
+  authToken = null; authEmail = null;
+  localStorage.removeItem('apex_token'); localStorage.removeItem('apex_email');
+}
+function logOut(){
+  clearAuth();
+  location.reload();
+}
+
+async function loadState(){
+  try{
+    const res = await apiCall('/api/state');
+    const parsed = res && res.data ? JSON.parse(res.data) : null;
+    state = parsed ? deepMerge(DEFAULT_STATE(), parsed) : DEFAULT_STATE();
+  }catch(e){
+    if (e.status===401){ clearAuth(); }
+    state = DEFAULT_STATE();
+  }
+}
+
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try{ await apiCall('/api/state', { method:'PUT', body: JSON.stringify({ data: JSON.stringify(state) }) }); }
+    catch(e){
+      if (e.status===401){ toast('Signed out','Your session expired — please sign in again.','danger'); setTimeout(logOut, 1800); }
+      else { console.error('save failed', e); toast('Save failed','Your last change may not be saved. Check your connection.','danger'); }
+    }
+  }, 350);
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function todayISO(d=new Date()){ const x=new Date(d); x.setHours(0,0,0,0); return x.toISOString().slice(0,10); }
+function addDays(iso, n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return todayISO(d); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+function fmtDate(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDateShort(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); }
+function chapterKey(subject,chapter){ return subject+'::'+chapter; }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+function ensureChapterProgress(subject,chapter){
+  const key = chapterKey(subject,chapter);
+  if (!state.chapterProgress[key]){
+    state.chapterProgress[key] = { subject, chapter, lecture:false, notes:false, ncert:false, module:false, pyq:false, rev1:false, rev2:false, rev3:false, rev4:false, mock:false, mastered:false, hoursSpent:0, questionsAttempted:0, questionsCorrect:0 };
+  }
+  return state.chapterProgress[key];
+}
+function chapterProgressPct(cp){
+  const fields = ['lecture','notes','ncert','module','pyq','rev1','rev2','rev3','rev4','mock','mastered'];
+  const done = fields.filter(f=>cp[f]).length;
+  return Math.round(done/fields.length*100);
+}
+
+function toast(title, msg, type='brand', dur=4200){
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<div><b>${escapeHtml(title)}</b>${msg?`<div style="color:var(--text-2)">${escapeHtml(msg)}</div>`:''}</div>`;
+  stack.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, dur);
+}
+
+function openModal(html, size=''){
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  content.className = 'modal ' + (size==='lg'?'modal-lg':'');
+  content.innerHTML = html;
+  overlay.classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{ if(e.target.id==='modalOverlay') closeModal(); });
+
+function addXP(amount, reason){
+  state.profile.xp += amount;
+  state.profile.coins += Math.round(amount/2);
+  toast('+'+amount+' XP', reason||'', 'xp', 2600);
+  checkAchievements();
+}
+function currentLevel(){ return Math.floor(state.profile.xp/500)+1; }
+function xpIntoLevel(){ return state.profile.xp % 500; }
+
+function updateStreak(){
+  const today = todayISO();
+  const last = state.profile.lastStudyDate;
+  if (last === today) return;
+  if (last === addDays(today,-1)){ state.profile.streak += 1; }
+  else if (!last) { state.profile.streak = 1; }
+  else { state.profile.streak = 1; }
+  state.profile.lastStudyDate = today;
+}
+
+const ICONS = {
+  dashboard:'<path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-6H3v6z"/>',
+  logger:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+  revision:'<path d="M21 12a9 9 0 11-3.5-7.1"/><path d="M21 3v6h-6"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
+  flash:'<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
+  test:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',
+  weak:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.86a2 2 0 00-3.4 0z"/>',
+  chapter:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+  subject:'<path d="M12 2l9 4.5-9 4.5-9-4.5L12 2z"/><path d="M3 12.5l9 4.5 9-4.5"/><path d="M3 17l9 4.5 9-4.5"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 3M9 2h6"/>',
+  analytics:'<path d="M18 20V10M12 20V4M6 20v-6"/>',
+  goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  achieve:'<circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 22l5-3 5 3-1.21-8.11"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.63.77 1.05 1.43 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+};
+function icon(name, cls='svg-icon'){ return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`; }
+
+/* ============================================================
+   NAVIGATION / ROUTER
+   ============================================================ */
+const NAV = [
+  { group:'Overview', items:[
+    { id:'dashboard', label:'Dashboard', icon:'dashboard' },
+    { id:'logger', label:'Study Logger', icon:'logger' },
+  ]},
+  { group:'Retention', items:[
+    { id:'revisions', label:'Revisions', icon:'revision', badge:()=>dueRevisionCount() },
+    { id:'calendar', label:'Calendar', icon:'calendar' },
+    { id:'flashcards', label:'Flashcards', icon:'flash' },
+  ]},
+  { group:'Performance', items:[
+    { id:'tests', label:'Test Analysis', icon:'test' },
+    { id:'weakareas', label:'Weak Areas', icon:'weak' },
+    { id:'chapters', label:'Chapter Tracker', icon:'chapter' },
+    { id:'subjects', label:'Subjects', icon:'subject' },
+  ]},
+  { group:'Productivity', items:[
+    { id:'timetracker', label:'Time & Pomodoro', icon:'timer' },
+    { id:'analytics', label:'Analytics', icon:'analytics' },
+    { id:'goals', label:'Goals', icon:'goals' },
+    { id:'achievements', label:'Achievements', icon:'achieve' },
+  ]},
+  { group:'System', items:[
+    { id:'settings', label:'Settings', icon:'settings' },
+  ]},
+];
+let currentView = 'dashboard';
+
+function dueRevisionCount(){
+  const today = todayISO();
+  return state.revisions.filter(r=>r.status==='pending' && r.dueDate<=today).length;
+}
+
+function renderNav(){
+  const nav = document.getElementById('navList');
+  nav.innerHTML = NAV.map(g => `
+    <div class="nav-group-label">${g.group}</div>
+    ${g.items.map(it => {
+      const count = it.badge ? it.badge() : 0;
+      return `<a class="nav-item ${currentView===it.id?'active':''}" data-view="${it.id}">
+        ${icon(it.icon)} <span>${it.label}</span>
+        ${count>0?`<span class="badge-count">${count}</span>`:''}
+      </a>`;
+    }).join('')}
+  `).join('');
+  nav.querySelectorAll('.nav-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ navigateTo(el.dataset.view); if(window.innerWidth<=900) closeSidebar(); });
+  });
+  document.getElementById('streakVal').textContent = state.profile.streak;
+  const emailEl = document.getElementById('sidebarAccountEmail'); if (emailEl) emailEl.textContent = authEmail || '';
+}
+
+function navigateTo(viewId){
+  currentView = viewId;
+  renderNav();
+  renderView();
+}
+
+const RENDERERS = {}; // filled below per view
+
+function renderView(){
+  const wrap = document.getElementById('viewWrap');
+  wrap.innerHTML = `<div class="view active" id="view-${currentView}"></div>`;
+  const fn = RENDERERS[currentView];
+  if (fn) fn(document.getElementById('view-'+currentView));
+}
+
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('scrim').classList.add('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('scrim').classList.remove('show'); }
+document.getElementById('hamburger').addEventListener('click', openSidebar);
+document.getElementById('scrim').addEventListener('click', closeSidebar);
+
+/* ============================================================
+   COUNTDOWN STRIP
+   ============================================================ */
+function currentTrack(){ return state.settings.track || 'JEE'; }
+function currentTrackConfig(){ return TRACK_CONFIG[currentTrack()]; }
+function examColorsForTrack(){ return currentTrackConfig().examColors; }
+function renderCountdownStrip(){
+  const el = document.getElementById('countdownStrip');
+  if (!el) return;
+  const now = new Date();
+  el.innerHTML = Object.entries(state.examDates).map(([name,date])=>{
+    const target = new Date(date+'T00:00:00');
+    const diffMs = target - now;
+    const isPast = diffMs <= 0;
+    const totalSec = Math.max(0, Math.floor(diffMs/1000));
+    // days/h/m/s all derived from the SAME totalSec via floor, so they always add up consistently
+    const days = Math.floor(totalSec/86400);
+    const h = Math.floor((totalSec%86400)/3600);
+    const m = Math.floor((totalSec%3600)/60);
+    const s = totalSec%60;
+    return `<div class="cd-card" style="--cd-color:${examColorsForTrack()[name]||'var(--brand)'}">
+      <div class="cd-label">${name}</div>
+      <div class="cd-days">${isPast?'—':days}<span>days</span></div>
+      <div class="cd-clock">${isPast ? 'Exam window reached' : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}</div>
+    </div>`;
+  }).join('');
+}
+setInterval(()=>{ if(state) renderCountdownStrip(); }, 1000);
+
+/* ============================================================
+   NOTIFICATIONS / ALERT CENTER
+   ============================================================ */
+function getNotifications(){
+  const today = todayISO();
+  const notifs = [];
+  state.revisions.filter(r=>r.status==='pending' && r.dueDate===today).forEach(r=>{
+    notifs.push({ type:'due', color:'var(--warning)', title:`Revision due: ${r.chapter}`, sub:`${r.subject} · scheduled for today` });
+  });
+  state.revisions.filter(r=>r.status==='pending' && r.dueDate<today).forEach(r=>{
+    notifs.push({ type:'missed', color:'var(--danger)', title:`Missed revision: ${r.chapter}`, sub:`${r.subject} · was due ${fmtDateShort(r.dueDate)}` });
+  });
+  const in3 = addDays(today,3);
+  state.tests.filter(t=>t.scheduledDate && t.scheduledDate>=today && t.scheduledDate<=in3 && !t.completed).forEach(t=>{
+    notifs.push({ type:'test', color:'var(--physics)', title:`Upcoming test: ${t.subject}`, sub:`Scheduled ${fmtDateShort(t.scheduledDate)}` });
+  });
+  const todayHours = hoursStudiedOn(today);
+  if (todayHours < state.settings.dailyHourTarget){
+    notifs.push({ type:'goal', color:'var(--brand)', title:`Daily target not yet met`, sub:`${todayHours.toFixed(1)}h of ${state.settings.dailyHourTarget}h logged today` });
+  }
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0))/86400000);
+  notifs.push({ type:'quote', color:'var(--brand-2)', title:'Daily motivation', sub: QUOTES[dayOfYear % QUOTES.length] });
+  return notifs;
+}
+function renderNotifPanel(){
+  const panel = document.getElementById('notifPanel');
+  const notifs = getNotifications();
+  document.getElementById('notifDot').style.display = notifs.some(n=>n.type==='due'||n.type==='missed') ? 'block':'none';
+  panel.innerHTML = notifs.length ? notifs.map(n=>`
+    <div class="notif-item"><span class="notif-dot" style="background:${n.color}"></span>
+      <div><b>${escapeHtml(n.title)}</b><span>${escapeHtml(n.sub)}</span></div>
+    </div>`).join('') : `<div class="empty-state"><p>You're all caught up.</p></div>`;
+}
+document.getElementById('notifBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  renderNotifPanel();
+  document.getElementById('notifPanel').classList.toggle('show');
+});
+document.addEventListener('click', ()=>{ document.getElementById('notifPanel').classList.remove('show'); });
+
+function hoursStudiedOn(iso){
+  const logHours = state.logs.filter(l=>l.date===iso).reduce((s,l)=>s+(l.timeSpentMin||0),0)/60;
+  const sessionHours = state.timeSessions.filter(t=>todayISO(new Date(t.start))===iso).reduce((s,t)=>s+(t.durationSec||0),0)/3600;
+  return logHours + sessionHours;
+}
+
+/* ============================================================
+   GLOBAL SEARCH
+   ============================================================ */
+function buildSearchIndex(){
+  const idx = [];
+  state.logs.forEach(l=> idx.push({ tag:'Log', text:`${l.subject} · ${l.chapter} — ${l.rawText.slice(0,80)}`, view:'logger' }));
+  Object.values(state.chapterProgress).forEach(cp=> idx.push({ tag:'Chapter', text:`${cp.subject} · ${cp.chapter}`, view:'chapters' }));
+  state.revisions.forEach(r=> idx.push({ tag:'Revision', text:`${r.subject} · ${r.chapter} — due ${fmtDateShort(r.dueDate)}`, view:'revisions' }));
+  state.tests.forEach(t=> idx.push({ tag:'Test', text:`${t.subject} test — ${t.marks} marks`, view:'tests' }));
+  state.notes.forEach(n=> idx.push({ tag:'Note', text:`${n.subject} · ${n.chapter} notes`, view:'logger', noteId:n.id }));
+  return idx;
+}
+const searchInput = document.getElementById('globalSearch');
+const searchResultsEl = document.getElementById('searchResults');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q){ searchResultsEl.classList.remove('show'); return; }
+  const results = buildSearchIndex().filter(i=>i.text.toLowerCase().includes(q)).slice(0,15);
+  searchResultsEl.innerHTML = results.length ? results.map(r=>`
+    <div class="search-result-item" data-view="${r.view}"><div class="sr-tag">${r.tag}</div>${escapeHtml(r.text)}</div>
+  `).join('') : `<div class="search-result-item">No matches</div>`;
+  searchResultsEl.classList.add('show');
+  searchResultsEl.querySelectorAll('.search-result-item[data-view]').forEach(el=>{
+    el.addEventListener('click', ()=>{ navigateTo(el.dataset.view); searchResultsEl.classList.remove('show'); searchInput.value=''; });
+  });
+});
+document.addEventListener('click', (e)=>{ if(!e.target.closest('.search-box')) searchResultsEl.classList.remove('show'); });
+
+/* ============================================================
+   SMART STUDY LOGGER — PARSER
+   ============================================================
+   This is a lightweight, transparent, rule-based parser (keyword
+   + pattern matching against the syllabus), not a real AI model.
+   It always shows its guesses in an editable confirmation card
+   before saving, so nothing gets logged silently wrong.
+*/
+function parseStudyText(text){
+  const lower = text.toLowerCase();
+  let bestSubject = null, bestChapter = null, bestScore = 0;
+  for (const subject in state.syllabus){
+    state.syllabus[subject].forEach(chapter=>{
+      const chLower = chapter.toLowerCase();
+      const words = chLower.split(/\s+/).filter(w=>w.length>3);
+      let score = 0;
+      if (lower.includes(chLower)) score += 100;
+      words.forEach(w=>{ if (lower.includes(w)) score += 8; });
+      if (score > bestScore){ bestScore = score; bestSubject = subject; bestChapter = chapter; }
+    });
+  }
+  // fallback: guess subject from generic keywords
+  if (!bestSubject){
+    if (/physic|force|motion|electr|magnet|optic|wave|thermo|nuclei|atom/.test(lower)) bestSubject='Physics';
+    else if (/chem|organic|acid|reaction|bond|mole|compound/.test(lower)) bestSubject='Chemistry';
+    else if (/math|integr|deriv|matrix|probab|vector|trigono/.test(lower)) bestSubject='Maths';
+  }
+  const sources = [];
+  for (const src in SOURCE_KEYWORDS){ if (SOURCE_KEYWORDS[src].some(k=>lower.includes(k))) sources.push(src); }
+
+  let qCount = null;
+  const qMatch = text.match(/(\d+)\s*(questions|ques|qs|mcqs|problems)/i);
+  if (qMatch) qCount = parseInt(qMatch[1]);
+
+  let difficulty = 'Medium';
+  for (const d in DIFF_KEYWORDS){ if (DIFF_KEYWORDS[d].some(k=>lower.includes(k))) difficulty = d; }
+
+  let timeSpentMin = null;
+  const hrMatch = text.match(/(\d+(?:\.\d+)?)\s*(hours|hrs|hr)\b/i);
+  const minMatch = text.match(/(\d+)\s*(minutes|mins|min)\b/i);
+  if (hrMatch) timeSpentMin = Math.round(parseFloat(hrMatch[1])*60);
+  else if (minMatch) timeSpentMin = parseInt(minMatch[1]);
+
+  return {
+    subject: bestSubject || 'Physics',
+    chapter: bestChapter || (state.syllabus[bestSubject||'Physics'][0]),
+    subtopic: '',
+    sources: sources.length ? sources : ['Module'],
+    questionCount: qCount,
+    difficulty,
+    timeSpentMin: timeSpentMin || 60,
+    confident: bestScore >= 8,
+  };
+}
+
+function noteTemplate(subject, chapter){
+  return `<p><b>Key Concepts</b> — summarize the 3-5 core ideas from ${escapeHtml(chapter)} in your own words.</p>
+<p><b>Important Formulas</b> — list the formulas you used today.</p>
+<p><b>Common Mistakes</b> — what tripped you up in this session?</p>
+<p><b>${currentTrack()} Tricks</b> — any shortcut or elimination trick worth remembering.</p>
+<p><b>Board Points</b> — anything phrased exactly the way boards expect it.</p>
+<p><b>NCERT Highlights</b> — lines/examples from the NCERT text worth re-reading.</p>
+<p><b>PYQs to Revisit</b> — note any previous-year question types from this topic.</p>`;
+}
+
+function generateFlashcards(subject, chapter, logId){
+  // Small starter deck — always editable/expandable by the student.
+  const starters = [
+    { q:`Define / state the core idea of "${chapter}".`, a:'(edit with your own definition)' },
+    { q:`Write the most important formula from "${chapter}".`, a:'(edit with the formula)' },
+    { q:`What's the most common mistake students make in "${chapter}"?`, a:'(edit with your mistake from today)' },
+  ];
+  return starters.map(s => ({ id: uid(), logId, subject, chapter, q:s.q, a:s.a, difficulty:'Medium', nextReview: todayISO(), reviewCount:0 }));
+}
+
+function scheduleRevisions(logId, subject, chapter, fromDate){
+  return state.revisionIntervals.map(days => ({
+    id: uid(), logId, subject, chapter,
+    dueDate: addDays(fromDate, days),
+    intervalDays: days,
+    status: 'pending', doneDate: null,
+  }));
+}
+
+function saveStudyLog(parsed, rawText){
+  const date = todayISO();
+  const log = {
+    id: uid(), date, rawText,
+    subject: parsed.subject, chapter: parsed.chapter, subtopic: parsed.subtopic,
+    sources: parsed.sources, questionCount: parsed.questionCount, difficulty: parsed.difficulty,
+    timeSpentMin: parsed.timeSpentMin, boardPrep: !!parsed.boardPrep, createdAt: new Date().toISOString(),
+  };
+  state.logs.push(log);
+
+  const revs = scheduleRevisions(log.id, log.subject, log.chapter, date);
+  state.revisions.push(...revs);
+
+  const note = { id: uid(), logId: log.id, subject: log.subject, chapter: log.chapter, content: noteTemplate(log.subject, log.chapter), createdAt: log.createdAt };
+  state.notes.push(note);
+
+  const cards = generateFlashcards(log.subject, log.chapter, log.id);
+  state.flashcards.push(...cards);
+
+  const cp = ensureChapterProgress(log.subject, log.chapter);
+  cp.hoursSpent += log.timeSpentMin/60;
+  if (log.questionCount) cp.questionsAttempted += log.questionCount;
+  log.sources.forEach(src=>{
+    if (src==='NCERT') cp.ncert = true;
+    if (src==='Module' || src==='Coaching') cp.module = true;
+    if (src==='PYQ') cp.pyq = true;
+    if (src==='Mock') cp.mock = true;
+  });
+  cp.lecture = true;
+  cp.notes = true;
+
+  updateStreak();
+  saveState();
+  addXP(20 + (log.questionCount ? Math.min(30, Math.round(log.questionCount/3)) : 0), `Logged ${log.chapter}`);
+  toast('Session logged', `${log.subject} · ${log.chapter} — revisions scheduled for ${state.revisionIntervals.join('/')} days`, 'success');
+  return log;
+}
+
+/* ============================================================
+   VIEW: DASHBOARD
+   ============================================================ */
+function weekRangeHours(daysBack){
+  let total = 0;
+  for (let i=0;i<daysBack;i++) total += hoursStudiedOn(addDays(todayISO(),-i));
+  return total;
+}
+function monthCompletionPct(){
+  const keys = Object.values(state.chapterProgress);
+  if (!keys.length) return 0;
+  const avg = keys.reduce((s,cp)=>s+chapterProgressPct(cp),0)/keys.length;
+  return Math.round(avg);
+}
+RENDERERS.dashboard = function(el){
+  const today = todayISO();
+  const hrsToday = hoursStudiedOn(today);
+  const target = state.settings.dailyHourTarget;
+  const todayLogs = state.logs.filter(l=>l.date===today);
+  const todayRevisions = state.revisions.filter(r=>r.dueDate===today && r.status==='pending');
+  const todayTests = state.tests.filter(t=>t.scheduledDate===today);
+  const weak = computeWeakAreas().filter(w=>w.tier==='Very Weak' || w.tier==='Weak').slice(0,3);
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0))/86400000);
+  const quote = QUOTES[dayOfYear % QUOTES.length];
+
+  el.innerHTML = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Welcome back 👋</div>
+        <div class="view-sub">${new Date().toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long', year:'numeric'})} · Level ${currentLevel()} · ${state.profile.xp} XP</div>
+      </div>
+      <button class="btn btn-primary" onclick="navigateTo('logger')">${icon('logger')} Log today's study</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px; background:linear-gradient(120deg, rgba(124,108,240,0.12), rgba(200,109,215,0.06)); border-color:rgba(124,108,240,0.25);">
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div style="font-size:22px;">💬</div>
+        <div style="flex:1; font-size:13.5px; color:var(--text-1); font-style:italic;">"${escapeHtml(quote)}"</div>
+      </div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      <div class="card stat-card">
+        <div class="stat-top"><div class="stat-label">Hours Today</div><div class="stat-icon" style="background:var(--brand-dim, rgba(124,108,240,.15)); color:var(--brand);">${icon('timer')}</div></div>
+        <div class="stat-value">${hrsToday.toFixed(1)}<span style="font-size:14px;color:var(--text-2);"> / ${target}h</span></div>
+        <div class="progress-bar" style="margin-top:8px;"><div style="width:${clamp(hrsToday/target*100,0,100)}%"></div></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><div class="stat-label">Study Streak</div><div class="stat-icon" style="background:var(--warning-dim); color:var(--warning);">🔥</div></div>
+        <div class="stat-value">${state.profile.streak}<span style="font-size:14px;color:var(--text-2);"> days</span></div>
+        <div class="stat-delta up">Keep it alive today</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><div class="stat-label">Weekly Hours</div><div class="stat-icon" style="background:var(--chemistry-dim); color:var(--chemistry);">${icon('analytics')}</div></div>
+        <div class="stat-value">${weekRangeHours(7).toFixed(1)}<span style="font-size:14px;color:var(--text-2);">h</span></div>
+        <div class="stat-delta up">Last 7 days</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><div class="stat-label">Overall Completion</div><div class="stat-icon" style="background:var(--physics-dim); color:var(--physics);">${icon('chapter')}</div></div>
+        <div class="stat-value">${monthCompletionPct()}<span style="font-size:14px;color:var(--text-2);">%</span></div>
+        <div class="stat-delta up">Across all chapters</div>
+      </div>
+    </div>
+
+    <div class="grid grid-12" style="margin-bottom:16px;">
+      <div class="card" style="grid-column: span 5;">
+        <div class="card-title">${icon('logger')} Today's Study Log <span class="tag tag-neutral tag-count">${todayLogs.length}</span></div>
+        ${todayLogs.length ? todayLogs.map(l=>`
+          <div style="padding:9px 0; border-bottom:1px solid var(--glass-border);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="tag ${SUBJECT_TAGCLASS[l.subject]}">${l.subject}</span>
+              <span style="font-size:11px;color:var(--text-3); font-family:var(--font-mono);">${l.timeSpentMin}m</span>
+            </div>
+            <div style="font-size:13px; margin-top:6px;">${escapeHtml(l.chapter)}</div>
+          </div>`).join('') : `<div class="empty-state"><p>Nothing logged yet today. Use the Study Logger to capture your session.</p></div>`}
+      </div>
+      <div class="card" style="grid-column: span 4;">
+        <div class="card-title">${icon('revision')} Today's Revision <span class="tag tag-warning tag-count">${todayRevisions.length}</span></div>
+        ${todayRevisions.length ? todayRevisions.map(r=>`
+          <div style="display:flex; align-items:center; gap:9px; padding:8px 0; border-bottom:1px solid var(--glass-border);">
+            <span class="tag ${SUBJECT_TAGCLASS[r.subject]}" style="flex-shrink:0;">${r.subject.slice(0,3)}</span>
+            <span style="font-size:12.5px; flex:1;">${escapeHtml(r.chapter)}</span>
+            <button class="btn btn-sm btn-success" onclick="markRevisionDone('${r.id}')">✓</button>
+          </div>`).join('') : `<div class="empty-state"><p>No revisions due today. Nice.</p></div>`}
+      </div>
+      <div class="card" style="grid-column: span 3;">
+        <div class="card-title">${icon('test')} Today's Tests</div>
+        ${todayTests.length ? todayTests.map(t=>`<div style="font-size:12.5px;padding:6px 0;">${t.subject}</div>`).join('') : `<div class="empty-state"><p>No tests scheduled.</p></div>`}
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">${icon('weak')} Weakest Areas Right Now</div>
+        ${weak.length ? weak.map(w=>`
+          <div class="weak-row">
+            <span class="tag ${SUBJECT_TAGCLASS[w.subject]}">${w.subject.slice(0,3)}</span>
+            <div class="weak-bar">
+              <div style="font-size:12.5px; margin-bottom:4px;">${escapeHtml(w.chapter)}</div>
+              <div class="progress-bar"><div style="width:${w.score}%; background:${w.tier==='Very Weak'?'var(--danger)':'var(--warning)'}"></div></div>
+            </div>
+            <span class="tag ${w.tier==='Very Weak'?'tag-danger':'tag-warning'}">${w.tier}</span>
+          </div>`).join('') : `<div class="empty-state"><p>Not enough data yet — log a few sessions and tests.</p></div>`}
+        <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="navigateTo('weakareas')">View full weak-area report →</button>
+      </div>
+      <div class="card">
+        <div class="card-title">${icon('goals')} Monthly & Weekly Progress</div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>This week</span><span style="font-family:var(--font-mono)">${weekRangeHours(7).toFixed(1)}h</span></div>
+          <div class="progress-bar"><div style="width:${clamp(weekRangeHours(7)/(target*7)*100,0,100)}%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>This month</span><span style="font-family:var(--font-mono)">${weekRangeHours(30).toFixed(1)}h</span></div>
+          <div class="progress-bar"><div style="width:${clamp(weekRangeHours(30)/(target*30)*100,0,100)}%; background:linear-gradient(90deg,var(--chemistry),var(--physics));"></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+function markRevisionDone(id){
+  const r = state.revisions.find(x=>x.id===id);
+  if (!r) return;
+  r.status = 'done'; r.doneDate = todayISO();
+  addXP(10, 'Revision completed');
+  saveState();
+  renderView(); renderNav();
+}
+function markRevisionMissed(id){
+  const r = state.revisions.find(x=>x.id===id);
+  if (!r) return;
+  r.status = 'missed';
+  saveState(); renderView(); renderNav();
+}
+function rescheduleRevision(id, newDate){
+  const r = state.revisions.find(x=>x.id===id);
+  if (!r) return;
+  r.dueDate = newDate; r.status = 'pending';
+  saveState(); renderView(); renderNav();
+  toast('Rescheduled', `Moved to ${fmtDateShort(newDate)}`, 'brand');
+}
+
+/* ============================================================
+   VIEW: STUDY LOGGER
+   ============================================================ */
+let lastParsed = null;
+RENDERERS.logger = function(el){
+  const recent = [...state.logs].slice().reverse().slice(0,8);
+  el.innerHTML = `
+    <div class="view-header">
+      <div><div class="view-title">Smart Study Logger</div><div class="view-sub">Type what you studied in plain language — subject, chapter, source and question count are detected automatically.</div></div>
+    </div>
+    <div class="grid grid-12">
+      <div class="card" style="grid-column: span 7;">
+        <div class="card-title">${icon('logger')} Today I studied…</div>
+        <textarea id="logInput" placeholder="e.g. Electrostatics, Electric Field, NCERT + PYQ + Coaching Module, 45 questions, 2 hours, felt tough"></textarea>
+        <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="handleParse()">${icon('logger')} Analyze & Preview</button>
+        <div id="parsePreview" style="margin-top:16px;"></div>
+      </div>
+      <div class="card" style="grid-column: span 5;">
+        <div class="card-title">Recent Logs</div>
+        ${recent.length ? recent.map(l=>`
+          <div style="padding:10px 0; border-bottom:1px solid var(--glass-border);">
+            <div style="display:flex; justify-content:space-between;">
+              <span class="tag ${SUBJECT_TAGCLASS[l.subject]}">${l.subject}</span>
+              <span style="font-size:11px; color:var(--text-3);">${fmtDateShort(l.date)}</span>
+            </div>
+            <div style="font-size:13px; margin-top:6px; font-weight:600;">${escapeHtml(l.chapter)}</div>
+            <div style="font-size:11.5px; color:var(--text-2); margin-top:3px;">${l.sources.join(', ')} ${l.questionCount?`· ${l.questionCount} Qs`:''} · ${l.timeSpentMin}m</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="openNoteModal('${l.id}')">View AI notes & flashcards</button>
+          </div>`).join('') : `<div class="empty-state"><b>No logs yet</b><p>Your first entry starts spaced revision for that chapter.</p></div>`}
+      </div>
+    </div>
+  `;
+};
+
+function handleParse(){
+  const text = document.getElementById('logInput').value.trim();
+  if (!text){ toast('Nothing to analyze','Type what you studied first.','danger'); return; }
+  lastParsed = parseStudyText(text);
+  const p = lastParsed;
+  document.getElementById('parsePreview').innerHTML = `
+    <div class="card" style="background:var(--glass-strong); border-color:var(--brand);">
+      <div class="card-title">${p.confident?'✅':'🤔'} Detected — edit anything before saving
+        <span class="tag ${p.confident?'tag-success':'tag-warning'}">${p.confident?'High confidence':'Low confidence, please check'}</span>
+      </div>
+      <div class="field"><label>Subject</label>
+        <select id="pv-subject">${Object.keys(state.syllabus).map(s=>`<option ${s===p.subject?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Chapter</label>
+        <select id="pv-chapter">${state.syllabus[p.subject].map(c=>`<option ${c===p.chapter?'selected':''}>${c}</option>`).join('')}</select>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Question Count</label><input type="number" id="pv-qcount" value="${p.questionCount||''}" placeholder="e.g. 45"></div>
+        <div class="field"><label>Time Spent (minutes)</label><input type="number" id="pv-time" value="${p.timeSpentMin}"></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Difficulty</label>
+          <select id="pv-diff">${['Easy','Medium','Hard'].map(d=>`<option ${d===p.difficulty?'selected':''}>${d}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Sources</label>
+          <select id="pv-sources" multiple style="height:76px;">${['NCERT','PYQ','Module','Coaching','Mock'].map(s=>`<option ${p.sources.includes(s)?'selected':''}>${s}</option>`).join('')}</select>
+        </div>
+      </div>
+      <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-weight:500; margin-bottom:14px;">
+        <input type="checkbox" class="chk" id="pv-boardprep"> This session was board-exam focused (marks it purple on the calendar)
+      </label>
+      <button class="btn btn-primary btn-block" onclick="confirmSaveLog()">Save & Schedule Revision</button>
+    </div>
+  `;
+  document.getElementById('pv-subject').addEventListener('change', (e)=>{
+    const subj = e.target.value;
+    document.getElementById('pv-chapter').innerHTML = state.syllabus[subj].map(c=>`<option>${c}</option>`).join('');
+  });
+}
+
+function confirmSaveLog(){
+  const text = document.getElementById('logInput').value.trim();
+  const sourcesSel = Array.from(document.getElementById('pv-sources').selectedOptions).map(o=>o.value);
+  const parsed = {
+    subject: document.getElementById('pv-subject').value,
+    chapter: document.getElementById('pv-chapter').value,
+    sources: sourcesSel.length ? sourcesSel : ['Module'],
+    questionCount: parseInt(document.getElementById('pv-qcount').value) || null,
+    timeSpentMin: parseInt(document.getElementById('pv-time').value) || 60,
+    difficulty: document.getElementById('pv-diff').value,
+    boardPrep: document.getElementById('pv-boardprep').checked,
+  };
+  const log = saveStudyLog(parsed, text);
+  document.getElementById('logInput').value = '';
+  document.getElementById('parsePreview').innerHTML = '';
+  renderNav();
+  renderView();
+  openNoteModal(log.id);
+}
+
+function openNoteModal(logId){
+  const log = state.logs.find(l=>l.id===logId);
+  const note = state.notes.find(n=>n.logId===logId);
+  const cards = state.flashcards.filter(c=>c.logId===logId);
+  if (!log) return;
+  openModal(`
+    <div class="modal-head"><h3>${escapeHtml(log.chapter)}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <span class="tag ${SUBJECT_TAGCLASS[log.subject]}">${log.subject}</span>
+    <div class="divider"></div>
+    <div class="card-title">📝 AI-Seeded Revision Notes <span style="font-size:10.5px; color:var(--text-3); font-weight:400; text-transform:none; margin-left:6px;">(editable)</span></div>
+    <div contenteditable="true" id="noteEditor" style="background:var(--bg-soft); border:1px solid var(--glass-border); border-radius:var(--r-sm); padding:12px 14px; font-size:12.5px; line-height:1.6; margin-bottom:14px; max-height:220px; overflow-y:auto;">${note?note.content:''}</div>
+    <button class="btn btn-ghost btn-sm" onclick="saveNoteEdits('${logId}')">Save note edits</button>
+    <div class="divider"></div>
+    <div class="card-title">⚡ Starter Flashcards <span style="font-size:10.5px; color:var(--text-3); font-weight:400; text-transform:none; margin-left:6px;">(fill in your own answers)</span></div>
+    <div class="grid grid-2">
+      ${cards.map(c=>`
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front"><div class="fc-label">Question</div><div class="fc-text">${escapeHtml(c.q)}</div><div class="fc-hint">Tap to flip</div></div>
+            <div class="flip-face flip-back"><div class="fc-label">Answer</div><div class="fc-text">${escapeHtml(c.a)}</div><div class="fc-hint">Tap to flip back</div></div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="closeModal(); navigateTo('flashcards');">Manage full flashcard deck →</button>
+  `, 'lg');
+}
+function saveNoteEdits(logId){
+  const note = state.notes.find(n=>n.logId===logId);
+  if (note){ note.content = document.getElementById('noteEditor').innerHTML; saveState(); toast('Notes saved','','success',2000); }
+}
+
+/* ============================================================
+   VIEW: REVISIONS
+   ============================================================ */
+RENDERERS.revisions = function(el){
+  const today = todayISO();
+  state.revisions.forEach(r=>{ if (r.status==='pending' && r.dueDate < today) r.status='missed'; });
+  const dueToday = state.revisions.filter(r=>r.status==='pending' && r.dueDate===today);
+  const upcoming = state.revisions.filter(r=>r.status==='pending' && r.dueDate>today).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+  const missed = state.revisions.filter(r=>r.status==='missed');
+  const done = state.revisions.filter(r=>r.status==='done').sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||''));
+
+  function rowHtml(r, showActions){
+    return `<div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--glass-border);">
+      <span class="tag ${SUBJECT_TAGCLASS[r.subject]}">${r.subject.slice(0,3)}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;">${escapeHtml(r.chapter)}</div>
+        <div style="font-size:11px; color:var(--text-3);">Day ${r.intervalDays} revision · due ${fmtDate(r.dueDate)}</div>
+      </div>
+      ${showActions ? `
+        <button class="btn btn-sm btn-success" onclick="markRevisionDone('${r.id}')">Done</button>
+        <input type="date" style="width:130px;" value="${r.dueDate}" onchange="rescheduleRevision('${r.id}', this.value)">
+      ` : r.status==='done' ? `<span class="tag tag-success">Completed ${fmtDateShort(r.doneDate)}</span>` : ''}
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Spaced Revision</div><div class="view-sub">Auto-scheduled at +1, +3, +7, +30 days from every logged session.</div></div></div>
+    <div class="grid grid-3" style="margin-bottom:16px;">
+      <div class="card stat-card"><div class="stat-label">Due Today</div><div class="stat-value" style="color:var(--warning)">${dueToday.length}</div></div>
+      <div class="card stat-card"><div class="stat-label">Missed</div><div class="stat-value" style="color:var(--danger)">${missed.length}</div></div>
+      <div class="card stat-card"><div class="stat-label">Completed</div><div class="stat-value" style="color:var(--success)">${done.length}</div></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">🟡 Due Today</div>
+        ${dueToday.length ? dueToday.map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>Nothing due today.</p></div>`}
+      </div>
+      <div class="card">
+        <div class="card-title">🔴 Missed — reschedule these</div>
+        ${missed.length ? missed.map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>No missed revisions. Great discipline.</p></div>`}
+      </div>
+      <div class="card">
+        <div class="card-title">🔵 Upcoming</div>
+        ${upcoming.length ? upcoming.slice(0,12).map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>Nothing scheduled yet.</p></div>`}
+      </div>
+      <div class="card">
+        <div class="card-title">🟢 Completed History</div>
+        ${done.length ? done.slice(0,12).map(r=>rowHtml(r,false)).join('') : `<div class="empty-state"><p>Completed revisions will show here.</p></div>`}
+      </div>
+    </div>
+  `;
+  saveState();
+};
+
+/* ============================================================
+   VIEW: CALENDAR
+   ============================================================ */
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+RENDERERS.calendar = function(el){
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Study Calendar</div><div class="view-sub">Click any date to see everything logged that day.</div></div></div>
+    <div class="card">
+      <div class="cal-head">
+        <div class="cal-nav">
+          <button class="btn btn-ghost btn-sm" onclick="calNav(-1)">← Prev</button>
+          <button class="btn btn-ghost btn-sm" onclick="calNav(1)">Next →</button>
+        </div>
+        <div style="font-family:var(--font-display); font-weight:700; font-size:16px;" id="calMonthLabel"></div>
+        <div></div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><span class="dot" style="background:var(--studied)"></span>Studied</div>
+        <div class="cal-legend-item"><span class="dot" style="background:var(--warning)"></span>Revision</div>
+        <div class="cal-legend-item"><span class="dot" style="background:var(--danger)"></span>Test</div>
+        <div class="cal-legend-item"><span class="dot" style="background:var(--success)"></span>Completed</div>
+        <div class="cal-legend-item"><span class="dot" style="background:var(--boardprep)"></span>Board Prep</div>
+      </div>
+    </div>
+  `;
+  renderCalendarGrid();
+};
+function calNav(delta){
+  calMonth += delta;
+  if (calMonth<0){ calMonth=11; calYear--; }
+  if (calMonth>11){ calMonth=0; calYear++; }
+  renderCalendarGrid();
+}
+function dayEvents(iso){
+  const ev = [];
+  if (state.logs.some(l=>l.date===iso)) ev.push('studied');
+  if (state.revisions.some(r=>r.dueDate===iso)) ev.push('revision');
+  if (state.tests.some(t=>t.date===iso || t.scheduledDate===iso)) ev.push('test');
+  if (state.revisions.some(r=>r.doneDate===iso)) ev.push('completed');
+  if (state.logs.some(l=>l.date===iso && l.boardPrep)) ev.push('boardprep');
+  return ev;
+}
+const EVENT_COLOR = { studied:'var(--studied)', revision:'var(--warning)', test:'var(--danger)', completed:'var(--success)', boardprep:'var(--boardprep)' };
+function renderCalendarGrid(){
+  document.getElementById('calMonthLabel').textContent = new Date(calYear,calMonth,1).toLocaleDateString('en-IN',{month:'long', year:'numeric'});
+  const grid = document.getElementById('calGrid');
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  let html = ['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for (let i=0;i<firstDay;i++) html += `<div class="cal-cell empty"></div>`;
+  const todayStr = todayISO();
+  for (let d=1; d<=daysInMonth; d++){
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events = dayEvents(iso);
+    html += `<div class="cal-cell ${iso===todayStr?'today':''}" onclick="openDayModal('${iso}')">
+      <div class="cal-daynum">${d}</div>
+      <div class="cal-dots">${events.map(e=>`<span class="cal-dot" style="background:${EVENT_COLOR[e]}"></span>`).join('')}</div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+function openDayModal(iso){
+  const logs = state.logs.filter(l=>l.date===iso);
+  const revs = state.revisions.filter(r=>r.dueDate===iso || r.doneDate===iso);
+  const tests = state.tests.filter(t=>t.date===iso || t.scheduledDate===iso);
+  openModal(`
+    <div class="modal-head"><h3>${fmtDate(iso)}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="card-title">Studied</div>
+    ${logs.length? logs.map(l=>`<div style="font-size:12.5px; padding:6px 0;"><span class="tag ${SUBJECT_TAGCLASS[l.subject]}">${l.subject}</span> ${escapeHtml(l.chapter)} · ${l.timeSpentMin}m</div>`).join('') : `<div class="empty-state" style="padding:14px 0;"><p>Nothing logged.</p></div>`}
+    <div class="divider"></div>
+    <div class="card-title">Revisions</div>
+    ${revs.length? revs.map(r=>`<div style="font-size:12.5px; padding:6px 0;"><span class="tag ${SUBJECT_TAGCLASS[r.subject]}">${r.subject}</span> ${escapeHtml(r.chapter)} · <span class="tag ${r.status==='done'?'tag-success':r.status==='missed'?'tag-danger':'tag-warning'}">${r.status}</span></div>`).join('') : `<div class="empty-state" style="padding:14px 0;"><p>None.</p></div>`}
+    <div class="divider"></div>
+    <div class="card-title">Tests</div>
+    ${tests.length? tests.map(t=>`<div style="font-size:12.5px; padding:6px 0;"><span class="tag ${SUBJECT_TAGCLASS[t.subject]}">${t.subject}</span> ${t.marks!=null?`${t.marks} marks`:'scheduled'}</div>`).join('') : `<div class="empty-state" style="padding:14px 0;"><p>None.</p></div>`}
+  `);
+}
+
+/* ============================================================
+   VIEW: FLASHCARDS
+   ============================================================ */
+let flashcardFilter = 'All';
+RENDERERS.flashcards = function(el){
+  const subjects = ['All', ...Object.keys(state.syllabus)];
+  const cards = state.flashcards.filter(c => flashcardFilter==='All' || c.subject===flashcardFilter);
+  el.innerHTML = `
+    <div class="view-header">
+      <div><div class="view-title">Flashcard Deck</div><div class="view-sub">${state.flashcards.length} cards total · auto-generated on every study log, fully editable.</div></div>
+      <button class="btn btn-primary" onclick="openAddFlashcard()">+ Add Flashcard</button>
+    </div>
+    <div class="tabs">${subjects.map(s=>`<div class="tab-btn ${flashcardFilter===s?'active':''}" onclick="flashcardFilter='${s}'; renderView();">${s}</div>`).join('')}</div>
+    ${cards.length ? `<div class="grid grid-3">${cards.map(c=>`
+      <div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="fc-label"><span class="tag ${SUBJECT_TAGCLASS[c.subject]}">${c.subject.slice(0,3)}</span></div>
+              <div class="fc-text">${escapeHtml(c.q)}</div>
+              <div class="fc-hint">Tap to flip</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="fc-label">Answer</div>
+              <div class="fc-text">${escapeHtml(c.a)}</div>
+              <div class="fc-hint">Tap to flip back</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation(); editFlashcard('${c.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteFlashcard('${c.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('')}</div>` : `<div class="empty-state"><b>No flashcards yet</b><p>Log a study session to auto-generate a starter deck.</p></div>`}
+  `;
+};
+function openAddFlashcard(){
+  openModal(`
+    <div class="modal-head"><h3>Add Flashcard</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="field"><label>Subject</label><select id="fc-subject">${Object.keys(state.syllabus).map(s=>`<option>${s}</option>`).join('')}</select></div>
+    <div class="field"><label>Chapter</label><select id="fc-chapter"></select></div>
+    <div class="field"><label>Question</label><textarea id="fc-q" style="min-height:60px;"></textarea></div>
+    <div class="field"><label>Answer</label><textarea id="fc-a" style="min-height:60px;"></textarea></div>
+    <button class="btn btn-primary btn-block" onclick="saveNewFlashcard()">Save Flashcard</button>
+  `);
+  const subjSel = document.getElementById('fc-subject');
+  const fill = ()=>{ document.getElementById('fc-chapter').innerHTML = state.syllabus[subjSel.value].map(c=>`<option>${c}</option>`).join(''); };
+  subjSel.addEventListener('change', fill); fill();
+}
+function saveNewFlashcard(){
+  const subject = document.getElementById('fc-subject').value;
+  const chapter = document.getElementById('fc-chapter').value;
+  const q = document.getElementById('fc-q').value.trim();
+  const a = document.getElementById('fc-a').value.trim();
+  if (!q || !a){ toast('Missing fields','Add both a question and an answer.','danger'); return; }
+  state.flashcards.push({ id:uid(), logId:null, subject, chapter, q, a, difficulty:'Medium', nextReview: todayISO(), reviewCount:0 });
+  saveState(); closeModal(); renderView(); toast('Flashcard added','','success',2000);
+}
+function editFlashcard(id){
+  const c = state.flashcards.find(x=>x.id===id); if (!c) return;
+  openModal(`
+    <div class="modal-head"><h3>Edit Flashcard</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="field"><label>Question</label><textarea id="fc-eq" style="min-height:60px;">${escapeHtml(c.q)}</textarea></div>
+    <div class="field"><label>Answer</label><textarea id="fc-ea" style="min-height:60px;">${escapeHtml(c.a)}</textarea></div>
+    <button class="btn btn-primary btn-block" onclick="saveEditFlashcard('${id}')">Save Changes</button>
+  `);
+}
+function saveEditFlashcard(id){
+  const c = state.flashcards.find(x=>x.id===id); if (!c) return;
+  c.q = document.getElementById('fc-eq').value.trim();
+  c.a = document.getElementById('fc-ea').value.trim();
+  saveState(); closeModal(); renderView(); toast('Flashcard updated','','success',2000);
+}
+function deleteFlashcard(id){
+  state.flashcards = state.flashcards.filter(c=>c.id!==id);
+  saveState(); renderView();
+}
+
+/* ============================================================
+   VIEW: TEST ANALYSIS
+   ============================================================ */
+function computeTestMetrics(t){
+  const attempted = t.correct + t.wrong;
+  const total = attempted + t.skipped;
+  const accuracy = attempted ? (t.correct/attempted*100) : 0;
+  const negMarks = t.wrong * (t.negPerQ||0);
+  const netMarks = t.correct*(t.marksPerQ||4) - negMarks;
+  const negPct = t.marks ? (negMarks/Math.max(1,Math.abs(t.marks)+negMarks)*100) : 0;
+  const speed = total ? (t.timeMin/total) : 0; // min per question
+  return { accuracy, negMarks, netMarks, negPct, speed, total };
+}
+function predictedPercentile(t){
+  // Rough illustrative heuristic only — NOT an official predictor.
+  const maxMarks = t.maxMarks || currentTrackConfig().defaultMaxMarks;
+  const ratio = clamp((t.marks||0)/maxMarks, 0, 1);
+  return clamp(Math.round(ratio*99.9*100)/100, 0, 99.9);
+}
+RENDERERS.tests = function(el){
+  const tests = [...state.tests].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const avgMarks = tests.length ? (tests.reduce((s,t)=>s+(t.marks||0),0)/tests.length).toFixed(1) : '—';
+  const avgAcc = tests.length ? (tests.reduce((s,t)=>s+computeTestMetrics(t).accuracy,0)/tests.length).toFixed(1) : '—';
+
+  el.innerHTML = `
+    <div class="view-header">
+      <div><div class="view-title">Test Analysis</div><div class="view-sub">Log every test to track accuracy, speed, negative marking and performance trends.</div></div>
+      <button class="btn btn-primary" onclick="openAddTest()">+ Add Test Result</button>
+    </div>
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      <div class="card stat-card"><div class="stat-label">Tests Logged</div><div class="stat-value">${tests.length}</div></div>
+      <div class="card stat-card"><div class="stat-label">Average Marks</div><div class="stat-value">${avgMarks}</div></div>
+      <div class="card stat-card"><div class="stat-label">Average Accuracy</div><div class="stat-value">${avgAcc}${tests.length?'%':''}</div></div>
+      <div class="card stat-card"><div class="stat-label">${currentTrackConfig().scoreLabel}</div><div class="stat-value">${tests.length?predictedPercentile(tests[0]):'—'}</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">${icon('analytics')} Marks & Accuracy Over Time</div>
+      <canvas id="testChart" height="90"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Test History</div>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Date</th><th>Subject</th><th>Chapter</th><th>Marks</th><th>Accuracy</th><th>Neg %</th><th>Speed/Q</th><th>${currentTrackConfig().scoreLabel}</th></tr></thead>
+        <tbody>
+          ${tests.length ? tests.map(t=>{ const m = computeTestMetrics(t); return `
+            <tr>
+              <td>${fmtDateShort(t.date)}</td>
+              <td><span class="tag ${SUBJECT_TAGCLASS[t.subject]}">${t.subject}</span></td>
+              <td>${escapeHtml(t.chapter||'Mixed')}</td>
+              <td style="font-family:var(--font-mono)">${t.marks}</td>
+              <td style="font-family:var(--font-mono)">${m.accuracy.toFixed(1)}%</td>
+              <td style="font-family:var(--font-mono); color:var(--danger)">${m.negPct.toFixed(1)}%</td>
+              <td style="font-family:var(--font-mono)">${m.speed.toFixed(1)}m</td>
+              <td style="font-family:var(--font-mono)">${predictedPercentile(t)}</td>
+            </tr>`; }).join('') : `<tr><td colspan="8"><div class="empty-state"><p>No tests logged yet.</p></div></td></tr>`}
+        </tbody>
+      </table></div>
+      <div style="font-size:10.5px; color:var(--text-3); margin-top:10px;">*This is a rough, illustrative estimate based on your own marks trend — not an official ${currentTrack()} prediction.</div>
+    </div>
+  `;
+  renderTestChart(tests);
+};
+let testChartInstance = null;
+function renderTestChart(tests){
+  const canvas = document.getElementById('testChart'); if (!canvas || !window.Chart) return;
+  if (testChartInstance) testChartInstance.destroy();
+  const sorted = [...tests].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  testChartInstance = new Chart(canvas.getContext('2d'), {
+    type:'line',
+    data:{ labels: sorted.map(t=>fmtDateShort(t.date)),
+      datasets:[
+        { label:'Marks', data: sorted.map(t=>t.marks), borderColor:'#7C6CF0', backgroundColor:'rgba(124,108,240,0.15)', tension:0.35, fill:true },
+        { label:'Accuracy %', data: sorted.map(t=>computeTestMetrics(t).accuracy), borderColor:'#2DD4A7', backgroundColor:'transparent', tension:0.35, yAxisID:'y1' },
+      ]},
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#9A9DB0' } } },
+      scales:{ x:{ ticks:{ color:'#5C5F72' }, grid:{ color:'rgba(255,255,255,0.05)' } },
+        y:{ ticks:{ color:'#5C5F72' }, grid:{ color:'rgba(255,255,255,0.05)' } },
+        y1:{ position:'right', ticks:{ color:'#5C5F72' }, grid:{ display:false }, min:0, max:100 } } }
+  });
+}
+function openAddTest(){
+  openModal(`
+    <div class="modal-head"><h3>Add Test Result</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="grid grid-2">
+      <div class="field"><label>Subject</label><select id="t-subject">${Object.keys(state.syllabus).map(s=>`<option>${s}</option>`).join('')}<option>Mixed</option></select></div>
+      <div class="field"><label>Chapter (optional)</label><input type="text" id="t-chapter" placeholder="e.g. Electrostatics"></div>
+      <div class="field"><label>Date</label><input type="date" id="t-date" value="${todayISO()}"></div>
+      <div class="field"><label>Total Marks Scored</label><input type="number" id="t-marks" placeholder="e.g. 187"></div>
+      <div class="field"><label>Max Marks</label><input type="number" id="t-maxmarks" value="${currentTrackConfig().defaultMaxMarks}"></div>
+      <div class="field"><label>Marks per correct Q</label><input type="number" id="t-mpq" value="4"></div>
+      <div class="field"><label>Negative marks per wrong Q</label><input type="number" id="t-negpq" value="1"></div>
+      <div class="field"><label>Correct</label><input type="number" id="t-correct" placeholder="e.g. 55"></div>
+      <div class="field"><label>Wrong</label><input type="number" id="t-wrong" placeholder="e.g. 10"></div>
+      <div class="field"><label>Skipped</label><input type="number" id="t-skipped" placeholder="e.g. 10"></div>
+      <div class="field"><label>Time Taken (minutes)</label><input type="number" id="t-time" value="180"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveTest()">Save Test Result</button>
+  `, 'lg');
+}
+function saveTest(){
+  const t = {
+    id: uid(), date: document.getElementById('t-date').value || todayISO(),
+    subject: document.getElementById('t-subject').value,
+    chapter: document.getElementById('t-chapter').value.trim(),
+    marks: parseFloat(document.getElementById('t-marks').value) || 0,
+    maxMarks: parseFloat(document.getElementById('t-maxmarks').value) || currentTrackConfig().defaultMaxMarks,
+    marksPerQ: parseFloat(document.getElementById('t-mpq').value) || 4,
+    negPerQ: parseFloat(document.getElementById('t-negpq').value) || 1,
+    correct: parseInt(document.getElementById('t-correct').value) || 0,
+    wrong: parseInt(document.getElementById('t-wrong').value) || 0,
+    skipped: parseInt(document.getElementById('t-skipped').value) || 0,
+    timeMin: parseFloat(document.getElementById('t-time').value) || 180,
+    completed: true,
+  };
+  state.tests.push(t);
+  if (t.chapter){
+    const cp = ensureChapterProgress(t.subject, t.chapter);
+    cp.mock = true;
+  }
+  saveState(); closeModal(); renderView(); renderNav();
+  addXP(25, 'Test analysed');
+  toast('Test saved', `${t.subject} · ${t.marks}/${t.maxMarks}`, 'success');
+}
+
+/* ============================================================
+   WEAK AREA ENGINE
+   ============================================================ */
+function computeWeakAreas(){
+  const chapterKeys = new Set();
+  Object.values(state.chapterProgress).forEach(cp=>chapterKeys.add(chapterKey(cp.subject,cp.chapter)));
+  state.tests.forEach(t=>{ if (t.chapter) chapterKeys.add(chapterKey(t.subject,t.chapter)); });
+
+  const rows = [];
+  chapterKeys.forEach(key=>{
+    const [subject, chapter] = key.split('::');
+    const cp = state.chapterProgress[key];
+    const chapterTests = state.tests.filter(t=>t.subject===subject && t.chapter===chapter);
+    const revs = state.revisions.filter(r=>r.subject===subject && r.chapter===chapter);
+    const missedCount = revs.filter(r=>r.status==='missed').length;
+    const totalRevs = revs.length || 1;
+    const missRate = missedCount/totalRevs;
+    const avgAcc = chapterTests.length ? chapterTests.reduce((s,t)=>s+computeTestMetrics(t).accuracy,0)/chapterTests.length : null;
+    const avgMarksRatio = chapterTests.length ? chapterTests.reduce((s,t)=>s+((t.marks||0)/(t.maxMarks||300)),0)/chapterTests.length : null;
+
+    // weighted score: lower = weaker. 100 = mastered, 0 = very weak.
+    let score = 60; // neutral baseline for chapters with no test data
+    if (avgAcc !== null) score = avgAcc;
+    score -= missRate*30;
+    if (cp && cp.mastered) score = Math.max(score, 90);
+    score = clamp(Math.round(score), 0, 100);
+
+    let tier = 'Average';
+    if (score < 35) tier = 'Very Weak';
+    else if (score < 55) tier = 'Weak';
+    else if (score < 75) tier = 'Average';
+    else if (score < 92) tier = 'Strong';
+    else tier = 'Mastered';
+
+    rows.push({ subject, chapter, score, tier, missedCount, avgAcc, testsCount: chapterTests.length });
+  });
+  return rows.sort((a,b)=>a.score-b.score);
+}
+RENDERERS.weakareas = function(el){
+  const rows = computeWeakAreas();
+  const tiers = ['Very Weak','Weak','Average','Strong','Mastered'];
+  const tierColor = { 'Very Weak':'var(--danger)', 'Weak':'var(--warning)', 'Average':'var(--text-2)', 'Strong':'var(--chemistry)', 'Mastered':'var(--success)' };
+  const suggestion = rows.find(r=>r.tier==='Very Weak') || rows.find(r=>r.tier==='Weak');
+
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Weak Area Tracker</div><div class="view-sub">Auto-classified from revision misses, test accuracy and repeated mistakes.</div></div></div>
+    ${suggestion ? `<div class="card" style="margin-bottom:16px; border-color:var(--danger);">
+      <div class="card-title">🎯 Today's Suggested Focus</div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="tag ${SUBJECT_TAGCLASS[suggestion.subject]}">${suggestion.subject}</span>
+        <div style="font-size:14px; font-weight:600;">${escapeHtml(suggestion.chapter)}</div>
+        <span class="tag tag-danger">${suggestion.tier}</span>
+      </div>
+    </div>` : ''}
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${tiers.map(t=>`<div class="card stat-card"><div class="stat-label">${t}</div><div class="stat-value" style="color:${tierColor[t]}; font-size:20px;">${rows.filter(r=>r.tier===t).length}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Priority List</div>
+      ${rows.length ? rows.map(r=>`
+        <div class="weak-row">
+          <span class="tag ${SUBJECT_TAGCLASS[r.subject]}">${r.subject.slice(0,3)}</span>
+          <div class="weak-bar">
+            <div style="font-size:13px; margin-bottom:4px;">${escapeHtml(r.chapter)} ${r.testsCount?`<span style="color:var(--text-3); font-size:11px;">· ${r.testsCount} test(s)</span>`:''}</div>
+            <div class="progress-bar"><div style="width:${r.score}%; background:${tierColor[r.tier]}"></div></div>
+          </div>
+          <span class="tag" style="background:transparent; color:${tierColor[r.tier]}; border:1px solid ${tierColor[r.tier]};">${r.tier}</span>
+        </div>`).join('') : `<div class="empty-state"><b>No data yet</b><p>Log study sessions and tests to populate weak-area analysis.</p></div>`}
+    </div>
+  `;
+};
+
+/* ============================================================
+   VIEW: CHAPTER TRACKER
+   ============================================================ */
+let chapterFilterSubject = 'Physics';
+const CHECK_FIELDS = [['lecture','Lecture'],['notes','Notes'],['ncert','NCERT'],['module','Module'],['pyq','PYQ'],['rev1','R1'],['rev2','R2'],['rev3','R3'],['rev4','R4'],['mock','Mock'],['mastered','Mastered']];
+RENDERERS.chapters = function(el){
+  const subj = chapterFilterSubject;
+  const chapterList = state.syllabus[subj];
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Chapter Tracker</div><div class="view-sub">Every checkbox updates completion % · rename, reorder or delete chapters to match your own coaching split.</div></div></div>
+    <div class="tabs">${Object.keys(state.syllabus).map(s=>`<div class="tab-btn ${chapterFilterSubject===s?'active':''}" data-subj-tab="${s}">${s}</div>`).join('')}</div>
+    <div class="card">
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th style="width:30px;"></th><th style="min-width:220px;">Chapter</th>${CHECK_FIELDS.map(f=>`<th style="text-align:center;">${f[1]}</th>`).join('')}<th>Progress</th><th></th></tr></thead>
+        <tbody id="chapterTrackerBody">
+          ${chapterList.map((chapter,idx)=>{
+            const cp = ensureChapterProgress(subj, chapter);
+            const pct = chapterProgressPct(cp);
+            return `<tr data-chapter="${escapeHtml(chapter)}">
+              <td style="white-space:nowrap; color:var(--text-3);">
+                <button class="btn btn-ghost btn-sm move-up" style="padding:2px 6px; ${idx===0?'opacity:.3;':''}" title="Move up">▲</button>
+                <button class="btn btn-ghost btn-sm move-down" style="padding:2px 6px; ${idx===chapterList.length-1?'opacity:.3;':''}" title="Move down">▼</button>
+              </td>
+              <td><input type="text" class="chapter-name-input rename-input" value="${escapeHtml(chapter)}"></td>
+              ${CHECK_FIELDS.map(f=>`<td style="text-align:center;"><input type="checkbox" class="chk field-toggle" data-field="${f[0]}" ${cp[f[0]]?'checked':''}></td>`).join('')}
+              <td style="min-width:110px;"><div class="progress-bar"><div style="width:${pct}%"></div></div><div style="font-size:10.5px; color:var(--text-3); margin-top:3px; font-family:var(--font-mono);">${pct}%</div></td>
+              <td><button class="btn btn-danger btn-sm delete-chapter" title="Delete chapter">🗑</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
+      <div style="display:flex; gap:8px; margin-top:14px; align-items:center;">
+        <input type="text" id="newChapterInput" placeholder="Add a custom chapter to ${subj}…" style="flex:1;">
+        <button class="btn btn-primary btn-sm" id="addChapterBtn">+ Add Chapter</button>
+      </div>
+    </div>
+  `;
+  bindChapterTrackerEvents(subj);
+};
+function bindChapterTrackerEvents(subj){
+  document.querySelectorAll('[data-subj-tab]').forEach(el=>{
+    el.addEventListener('click', ()=>{ chapterFilterSubject = el.dataset.subjTab; renderView(); });
+  });
+  document.querySelectorAll('#chapterTrackerBody tr').forEach(row=>{
+    const chapter = row.dataset.chapter;
+    row.querySelectorAll('.field-toggle').forEach(chk=>{
+      chk.addEventListener('change', ()=> toggleChapterField(subj, chapter, chk.dataset.field, chk.checked));
+    });
+    const renameInput = row.querySelector('.rename-input');
+    renameInput.addEventListener('change', ()=> renameChapter(subj, chapter, renameInput.value));
+    row.querySelector('.delete-chapter').addEventListener('click', ()=> confirmDeleteChapter(subj, chapter));
+    row.querySelector('.move-up').addEventListener('click', ()=> moveChapter(subj, chapter, -1));
+    row.querySelector('.move-down').addEventListener('click', ()=> moveChapter(subj, chapter, 1));
+  });
+  const addBtn = document.getElementById('addChapterBtn');
+  const addInput = document.getElementById('newChapterInput');
+  const doAdd = ()=> addChapterToSyllabus(subj, addInput.value);
+  addBtn.addEventListener('click', doAdd);
+  addInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter') doAdd(); });
+}
+function toggleChapterField(subject, chapter, field, val){
+  const cp = ensureChapterProgress(subject, chapter);
+  cp[field] = val;
+  saveState();
+  if (field==='mastered' && val) addXP(40, `Mastered ${chapter}`);
+  renderView();
+}
+function addChapterToSyllabus(subject, name){
+  const trimmed = (name||'').trim();
+  if (!trimmed){ toast('Nothing to add','Type a chapter name first.','danger'); return; }
+  const exists = state.syllabus[subject].some(c=>c.toLowerCase()===trimmed.toLowerCase());
+  if (exists){ toast('Already exists', trimmed+' is already in '+subject+'.', 'danger'); return; }
+  state.syllabus[subject].push(trimmed);
+  ensureChapterProgress(subject, trimmed);
+  saveState(); renderView();
+  toast('Chapter added', trimmed+' added to '+subject, 'success', 2200);
+}
+function renameChapter(subject, oldName, newNameRaw){
+  const newName = (newNameRaw||'').trim();
+  if (!newName || newName===oldName){ renderView(); return; }
+  const dup = state.syllabus[subject].some(c=>c!==oldName && c.toLowerCase()===newName.toLowerCase());
+  if (dup){ toast('Name already used', 'Another chapter in '+subject+' already has that name.', 'danger'); renderView(); return; }
+  const idx = state.syllabus[subject].indexOf(oldName);
+  if (idx===-1){ renderView(); return; }
+  state.syllabus[subject][idx] = newName;
+
+  const oldKey = chapterKey(subject, oldName), newKey = chapterKey(subject, newName);
+  if (state.chapterProgress[oldKey]){
+    state.chapterProgress[newKey] = { ...state.chapterProgress[oldKey], chapter: newName };
+    delete state.chapterProgress[oldKey];
+  }
+  [state.logs, state.revisions, state.flashcards, state.notes, state.tests].forEach(arr=>{
+    arr.forEach(item=>{ if (item.subject===subject && item.chapter===oldName) item.chapter = newName; });
+  });
+  saveState(); renderView();
+  toast('Chapter renamed', oldName+' → '+newName, 'success', 2400);
+}
+function confirmDeleteChapter(subject, chapter){
+  openModal(`
+    <div class="modal-head"><h3>Remove this chapter?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <p style="font-size:13px; color:var(--text-2); margin-bottom:16px;">"${escapeHtml(chapter)}" will be removed from your ${escapeHtml(subject)} tracker list. Existing logs, notes and flashcards for it are kept, just no longer shown here.</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-danger btn-block" id="confirmDeleteBtn">Remove chapter</button>
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+  document.getElementById('confirmDeleteBtn').addEventListener('click', ()=>{
+    state.syllabus[subject] = state.syllabus[subject].filter(c=>c!==chapter);
+    saveState(); closeModal(); renderView();
+    toast('Chapter removed', chapter, 'brand', 2200);
+  });
+}
+function moveChapter(subject, chapter, direction){
+  const arr = state.syllabus[subject];
+  const idx = arr.indexOf(chapter);
+  const swapWith = idx + direction;
+  if (idx===-1 || swapWith<0 || swapWith>=arr.length) return;
+  [arr[idx], arr[swapWith]] = [arr[swapWith], arr[idx]];
+  saveState(); renderView();
+}
+
+/* ============================================================
+   VIEW: SUBJECTS
+   ============================================================ */
+let subjectTab = 'Physics';
+RENDERERS.subjects = function(el){
+  const subj = subjectTab;
+  const chapters = state.syllabus[subj];
+  const cps = chapters.map(c=>ensureChapterProgress(subj,c));
+  const totalHours = cps.reduce((s,cp)=>s+cp.hoursSpent,0);
+  const avgProgress = Math.round(cps.reduce((s,cp)=>s+chapterProgressPct(cp),0)/cps.length);
+  const upcomingRevs = state.revisions.filter(r=>r.subject===subj && r.status==='pending').sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,5);
+  const weak = computeWeakAreas().filter(w=>w.subject===subj && (w.tier==='Very Weak'||w.tier==='Weak')).slice(0,5);
+  const tests = state.tests.filter(t=>t.subject===subj);
+  const pyqCount = state.logs.filter(l=>l.subject===subj && l.sources.includes('PYQ')).length;
+  const notesCount = state.notes.filter(n=>n.subject===subj).length;
+
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Subject Dashboard</div><div class="view-sub">Deep dive per subject.</div></div></div>
+    <div class="tabs">${Object.keys(state.syllabus).map(s=>`<div class="tab-btn ${subjectTab===s?'active':''}" style="color:${subjectTab===s?'':'inherit'}" onclick="subjectTab='${s}'; renderView();">${s}</div>`).join('')}</div>
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      <div class="card stat-card"><div class="stat-label">Total Hours</div><div class="stat-value" style="color:${SUBJECT_COLOR[subj]}">${totalHours.toFixed(1)}</div></div>
+      <div class="card stat-card"><div class="stat-label">Avg Progress</div><div class="stat-value" style="color:${SUBJECT_COLOR[subj]}">${avgProgress}%</div></div>
+      <div class="card stat-card"><div class="stat-label">Tests Taken</div><div class="stat-value" style="color:${SUBJECT_COLOR[subj]}">${tests.length}</div></div>
+      <div class="card stat-card"><div class="stat-label">PYQ Sessions</div><div class="stat-value" style="color:${SUBJECT_COLOR[subj]}">${pyqCount}</div></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Upcoming Revision</div>
+        ${upcomingRevs.length ? upcomingRevs.map(r=>`<div style="font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--glass-border);">${escapeHtml(r.chapter)} · due ${fmtDateShort(r.dueDate)}</div>`).join('') : `<div class="empty-state"><p>Nothing scheduled.</p></div>`}
+      </div>
+      <div class="card">
+        <div class="card-title">Weak Chapters</div>
+        ${weak.length ? weak.map(w=>`<div style="font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between;"><span>${escapeHtml(w.chapter)}</span><span class="tag tag-danger">${w.tier}</span></div>`).join('') : `<div class="empty-state"><p>No weak chapters flagged.</p></div>`}
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">Chapter Progress Overview</div>
+      ${chapters.map(c=>{ const cp=ensureChapterProgress(subj,c); const pct=chapterProgressPct(cp); return `
+        <div style="display:flex; align-items:center; gap:10px; padding:7px 0;">
+          <div style="flex:1; font-size:12.5px;">${escapeHtml(c)}</div>
+          <div class="progress-bar" style="width:160px;"><div style="width:${pct}%; background:${SUBJECT_COLOR[subj]}"></div></div>
+          <div style="width:34px; text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--text-3);">${pct}%</div>
+        </div>`; }).join('')}
+    </div>
+  `;
+};
+
+/* ============================================================
+   VIEW: TIME TRACKER + POMODORO
+   ============================================================ */
+let stopwatch = { running:false, startTs:null, elapsedSec:0, subject:'Physics' };
+let swInterval = null;
+let pomodoro = { running:false, mode:'focus', remaining:25*60, cycle:0, preset:{focus:25*60, brk:5*60}, subject:'Physics' };
+let pomoInterval = null;
+
+RENDERERS.timetracker = function(el){
+  const sessions = [...state.timeSessions].reverse().slice(0,10);
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Time Tracker & Pomodoro</div><div class="view-sub">Every session automatically feeds your hours, streak and analytics.</div></div></div>
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="card-title">${icon('timer')} Stopwatch</div>
+        <div class="field"><label>Subject</label><select id="sw-subject" onchange="stopwatch.subject=this.value;">${Object.keys(state.syllabus).map(s=>`<option ${stopwatch.subject===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="timer-display" id="swDisplay" style="color:${SUBJECT_COLOR[stopwatch.subject]}">${formatHMS(stopwatch.elapsedSec)}</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+          <button class="btn btn-primary" id="swStartBtn" onclick="swToggle()">${stopwatch.running?'Pause':'Start'}</button>
+          <button class="btn btn-ghost" onclick="swStop()">Stop & Log</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">${icon('timer')} Pomodoro</div>
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+          ${[['25/5',25,5],['50/10',50,10],['90/20',90,20]].map(p=>`<button class="btn btn-ghost btn-sm" onclick="setPomoPreset(${p[1]},${p[2]})">${p[0]}</button>`).join('')}
+          <input type="number" placeholder="custom min" id="pomoCustom" style="width:90px;">
+          <button class="btn btn-ghost btn-sm" onclick="setPomoCustom()">Set</button>
+        </div>
+        <div class="timer-display" id="pomoDisplay" style="color:${pomodoro.mode==='focus'?'var(--brand)':'var(--success)'}">${formatMS(pomodoro.remaining)}</div>
+        <div style="text-align:center; font-size:11.5px; color:var(--text-3); margin-top:4px;" id="pomoModeLabel">${pomodoro.mode==='focus'?'Focus':'Break'} · Cycle ${pomodoro.cycle}</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
+          <button class="btn btn-primary" id="pomoStartBtn" onclick="pomoToggle()">${pomodoro.running?'Pause':'Start'}</button>
+          <button class="btn btn-ghost" onclick="pomoReset()">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">Recent Sessions</div>
+      ${sessions.length ? sessions.map(s=>`<div style="display:flex; justify-content:space-between; font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--glass-border);">
+        <span><span class="tag ${SUBJECT_TAGCLASS[s.subject]}">${s.subject}</span> ${s.type==='pomodoro'?'Pomodoro':'Manual'}</span>
+        <span style="font-family:var(--font-mono); color:var(--text-2);">${formatHMS(s.durationSec)} · ${fmtDateShort(todayISO(new Date(s.start)))}</span>
+      </div>`).join('') : `<div class="empty-state"><p>No sessions logged yet.</p></div>`}
+    </div>
+  `;
+  syncTimerDisplays();
+};
+function formatHMS(sec){ const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=Math.floor(sec%60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function formatMS(sec){ const m=Math.floor(sec/60), s=Math.floor(sec%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+
+function swToggle(){
+  if (!stopwatch.running){
+    stopwatch.running = true; stopwatch.startTs = Date.now() - stopwatch.elapsedSec*1000;
+    swInterval = setInterval(()=>{ stopwatch.elapsedSec = Math.floor((Date.now()-stopwatch.startTs)/1000); syncTimerDisplays(); }, 1000);
+  } else {
+    stopwatch.running = false; clearInterval(swInterval);
+  }
+  syncTimerDisplays();
+}
+function swStop(){
+  if (stopwatch.elapsedSec > 0){
+    state.timeSessions.push({ id: uid(), subject: stopwatch.subject, start: new Date(Date.now()-stopwatch.elapsedSec*1000).toISOString(), end: new Date().toISOString(), durationSec: stopwatch.elapsedSec, type:'manual' });
+    updateStreak(); saveState(); addXP(Math.min(20, Math.round(stopwatch.elapsedSec/300)), 'Study session logged');
+    toast('Session logged', formatHMS(stopwatch.elapsedSec)+' · '+stopwatch.subject, 'success');
+  }
+  stopwatch.running=false; clearInterval(swInterval); stopwatch.elapsedSec=0;
+  renderView(); renderNav();
+}
+function setPomoPreset(f,b){ pomodoro.preset={focus:f*60, brk:b*60}; pomodoro.mode='focus'; pomodoro.remaining=f*60; pomoReset(true); }
+function setPomoCustom(){ const v=parseInt(document.getElementById('pomoCustom').value); if(v) setPomoPreset(v, Math.max(1,Math.round(v/5))); }
+function pomoToggle(){
+  if (!pomodoro.running){
+    pomodoro.running = true;
+    pomoInterval = setInterval(()=>{
+      pomodoro.remaining--;
+      if (pomodoro.remaining<=0){
+        if (pomodoro.mode==='focus'){
+          state.timeSessions.push({ id:uid(), subject: pomodoro.subject, start:new Date(Date.now()-pomodoro.preset.focus*1000).toISOString(), end:new Date().toISOString(), durationSec: pomodoro.preset.focus, type:'pomodoro' });
+          updateStreak(); saveState(); addXP(15,'Pomodoro focus block complete');
+          pomodoro.cycle++; pomodoro.mode='break'; pomodoro.remaining=pomodoro.preset.brk;
+          toast('Focus block done','Time for a short break','success');
+        } else {
+          pomodoro.mode='focus'; pomodoro.remaining=pomodoro.preset.focus;
+          toast('Break over','Back to focus','brand');
+        }
+      }
+      syncTimerDisplays();
+    }, 1000);
+  } else { pomodoro.running=false; clearInterval(pomoInterval); }
+  syncTimerDisplays();
+}
+function pomoReset(silent){ pomodoro.running=false; clearInterval(pomoInterval); pomodoro.mode='focus'; pomodoro.remaining=pomodoro.preset.focus; if(!silent) renderView(); syncTimerDisplays(); }
+function syncTimerDisplays(){
+  const sw = document.getElementById('swDisplay'); if (sw) sw.textContent = formatHMS(stopwatch.elapsedSec);
+  const swBtn = document.getElementById('swStartBtn'); if (swBtn) swBtn.textContent = stopwatch.running?'Pause':'Start';
+  const pd = document.getElementById('pomoDisplay'); if (pd){ pd.textContent = formatMS(pomodoro.remaining); pd.style.color = pomodoro.mode==='focus'?'var(--brand)':'var(--success)'; }
+  const pl = document.getElementById('pomoModeLabel'); if (pl) pl.textContent = `${pomodoro.mode==='focus'?'Focus':'Break'} · Cycle ${pomodoro.cycle}`;
+  const pb = document.getElementById('pomoStartBtn'); if (pb) pb.textContent = pomodoro.running?'Pause':'Start';
+}
+
+/* ============================================================
+   VIEW: ANALYTICS
+   ============================================================ */
+let chartInstances = {};
+function destroyCharts(){ Object.values(chartInstances).forEach(c=>c && c.destroy()); chartInstances = {}; }
+RENDERERS.analytics = function(el){
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Analytics</div><div class="view-sub">Your study data, visualized.</div></div></div>
+    <div class="grid grid-2" style="margin-bottom:16px;">
+      <div class="card"><div class="card-title">Daily Hours (Last 14 Days)</div><canvas id="chDaily" height="160"></canvas></div>
+      <div class="card"><div class="card-title">Subject Distribution</div><canvas id="chSubject" height="160"></canvas></div>
+    </div>
+    <div class="grid grid-2" style="margin-bottom:16px;">
+      <div class="card"><div class="card-title">Weekly Hours (Last 8 Weeks)</div><canvas id="chWeekly" height="160"></canvas></div>
+      <div class="card"><div class="card-title">Revision Completion</div><canvas id="chRevision" height="160"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">${icon('calendar')} Study Heatmap (Last 180 Days)</div>
+      <div class="heatmap" id="heatmapGrid"></div>
+    </div>
+  `;
+  destroyCharts();
+  const dailyLabels=[], dailyData=[];
+  for (let i=13;i>=0;i--){ const iso=addDays(todayISO(),-i); dailyLabels.push(fmtDateShort(iso)); dailyData.push(+hoursStudiedOn(iso).toFixed(2)); }
+  chartInstances.daily = new Chart(document.getElementById('chDaily').getContext('2d'), { type:'bar',
+    data:{ labels:dailyLabels, datasets:[{ label:'Hours', data:dailyData, backgroundColor:'#7C6CF0', borderRadius:4 }] },
+    options: chartOpts() });
+
+  const subjTotals = Object.keys(state.syllabus).map(s=> state.logs.filter(l=>l.subject===s).reduce((a,l)=>a+l.timeSpentMin,0)/60 );
+  chartInstances.subject = new Chart(document.getElementById('chSubject').getContext('2d'), { type:'doughnut',
+    data:{ labels:Object.keys(state.syllabus), datasets:[{ data:subjTotals, backgroundColor:Object.keys(state.syllabus).map(s=>SUBJECT_HEX[s]||'#7C6CF0') }] },
+    options:{ plugins:{ legend:{ labels:{ color:'#9A9DB0' } } } } });
+
+  const wkLabels=[], wkData=[];
+  for (let w=7; w>=0; w--){ let sum=0; for (let d=0; d<7; d++) sum += hoursStudiedOn(addDays(todayISO(), -(w*7+d))); wkLabels.push('W-'+w); wkData.push(+sum.toFixed(1)); }
+  chartInstances.weekly = new Chart(document.getElementById('chWeekly').getContext('2d'), { type:'bar',
+    data:{ labels:wkLabels, datasets:[{ label:'Hours', data:wkData, backgroundColor:'#2DD4A7', borderRadius:4 }] }, options: chartOpts() });
+
+  const doneCt = state.revisions.filter(r=>r.status==='done').length;
+  const missedCt = state.revisions.filter(r=>r.status==='missed').length;
+  const pendingCt = state.revisions.filter(r=>r.status==='pending').length;
+  chartInstances.revision = new Chart(document.getElementById('chRevision').getContext('2d'), { type:'doughnut',
+    data:{ labels:['Completed','Missed','Pending'], datasets:[{ data:[doneCt,missedCt,pendingCt], backgroundColor:['#3DDC97','#F0576B','#F5B942'] }] },
+    options:{ plugins:{ legend:{ labels:{ color:'#9A9DB0' } } } } });
+
+  const hm = document.getElementById('heatmapGrid');
+  let hmHtml = '';
+  for (let i=179; i>=0; i--){
+    const iso = addDays(todayISO(), -i);
+    const h = hoursStudiedOn(iso);
+    const intensity = h<=0 ? 0 : h<1 ? 1 : h<2.5 ? 2 : h<4 ? 3 : 4;
+    const colors = ['var(--glass-strong)','rgba(61,220,151,0.25)','rgba(61,220,151,0.5)','rgba(61,220,151,0.75)','rgba(61,220,151,1)'];
+    hmHtml += `<div class="heatmap-cell" title="${fmtDate(iso)}: ${h.toFixed(1)}h" style="background:${colors[intensity]}"></div>`;
+  }
+  hm.innerHTML = hmHtml;
+};
+function chartOpts(){
+  return { responsive:true, plugins:{ legend:{ display:false } },
+    scales:{ x:{ ticks:{ color:'#5C5F72' }, grid:{ display:false } }, y:{ ticks:{ color:'#5C5F72' }, grid:{ color:'rgba(255,255,255,0.05)' } } } };
+}
+
+/* ============================================================
+   ACHIEVEMENTS / GAMIFICATION
+   ============================================================ */
+function totalHoursAllTime(){ return state.logs.reduce((s,l)=>s+l.timeSpentMin,0)/60 + state.timeSessions.reduce((s,t)=>s+t.durationSec,0)/3600; }
+function totalQuestionsAllTime(){ return state.logs.reduce((s,l)=>s+(l.questionCount||0),0); }
+function BADGES(){
+  const badges = [
+    { id:'hours100', label:'100 Hours Logged', icon:'⏱️', check: ()=>totalHoursAllTime()>=100 },
+    { id:'hours500', label:'500 Hours Logged', icon:'🏆', check: ()=>totalHoursAllTime()>=500 },
+    { id:'streak7', label:'7 Day Streak', icon:'🔥', check: ()=>state.profile.streak>=7 },
+    { id:'streak30', label:'30 Day Streak', icon:'💎', check: ()=>state.profile.streak>=30 },
+    { id:'q1000', label:'1000 Questions Solved', icon:'✍️', check: ()=>totalQuestionsAllTime()>=1000 },
+    { id:'firstlog', label:'First Study Log', icon:'🌱', check: ()=>state.logs.length>=1 },
+    { id:'firsttest', label:'First Test Analysed', icon:'📊', check: ()=>state.tests.length>=1 },
+    { id:'rev50', label:'50 Revisions Completed', icon:'🧠', check: ()=>state.revisions.filter(r=>r.status==='done').length>=50 },
+  ];
+  Object.values(state.chapterProgress).forEach(cp=>{
+    if (cp.mastered) badges.push({ id:'mastered_'+chapterKey(cp.subject,cp.chapter), label:`Mastered ${cp.chapter}`, icon:'⭐', check:()=>true });
+  });
+  return badges;
+}
+function checkAchievements(){
+  BADGES().forEach(b=>{
+    if (!state.achievements[b.id] && b.check()){
+      state.achievements[b.id] = new Date().toISOString();
+      toast('🏅 Badge Unlocked', b.label, 'xp', 5000);
+    }
+  });
+  saveState();
+}
+RENDERERS.achievements = function(el){
+  checkAchievements();
+  const badges = BADGES();
+  const unlocked = badges.filter(b=>state.achievements[b.id]);
+  const locked = badges.filter(b=>!state.achievements[b.id]);
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Achievements</div><div class="view-sub">Level ${currentLevel()} · ${xpIntoLevel()}/500 XP to next level · ${state.profile.coins} coins</div></div></div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="progress-bar" style="height:12px;"><div style="width:${xpIntoLevel()/500*100}%"></div></div>
+    </div>
+    <div class="grid grid-4">
+      ${unlocked.map(b=>`<div class="card" style="text-align:center;"><div style="font-size:28px;">${b.icon}</div><div style="font-size:12px; margin-top:8px; font-weight:600;">${escapeHtml(b.label)}</div><div style="font-size:10px; color:var(--success); margin-top:4px;">Unlocked</div></div>`).join('')}
+      ${locked.map(b=>`<div class="card" style="text-align:center; opacity:.4;"><div style="font-size:28px;">🔒</div><div style="font-size:12px; margin-top:8px; font-weight:600;">${escapeHtml(b.label)}</div></div>`).join('')}
+    </div>
+  `;
+};
+
+/* ============================================================
+   VIEW: GOALS
+   ============================================================ */
+const GOAL_PERIODS = [['daily','Daily'],['weekly','Weekly'],['monthly','Monthly'],['yearly','Yearly'],['life','Life Goal']];
+RENDERERS.goals = function(el){
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Goals</div><div class="view-sub">From today's target to your life goal — all in one place.</div></div></div>
+    <div class="grid grid-2">
+      ${GOAL_PERIODS.map(([key,label])=>`
+        <div class="card">
+          <div class="card-title">${label} Goals</div>
+          <div id="goal-list-${key}">${renderGoalList(key)}</div>
+          <div style="display:flex; gap:6px; margin-top:10px;">
+            <input type="text" id="goal-input-${key}" placeholder="Add a ${label.toLowerCase()} goal…" onkeydown="if(event.key==='Enter') addGoal('${key}')">
+            <button class="btn btn-primary btn-sm" onclick="addGoal('${key}')">Add</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+};
+function renderGoalList(key){
+  const list = state.goals[key] || [];
+  if (!list.length) return `<div class="empty-state" style="padding:16px 0;"><p>No goals yet.</p></div>`;
+  return list.map(g=>`
+    <div style="display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--glass-border);">
+      <input type="checkbox" class="chk" ${g.done?'checked':''} onchange="toggleGoal('${key}','${g.id}')">
+      <span style="flex:1; font-size:12.5px; ${g.done?'text-decoration:line-through; color:var(--text-3);':''}">${escapeHtml(g.text)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="deleteGoal('${key}','${g.id}')">✕</button>
+    </div>`).join('');
+}
+function addGoal(key){
+  const input = document.getElementById('goal-input-'+key);
+  const text = input.value.trim(); if (!text) return;
+  state.goals[key].push({ id: uid(), text, done:false, createdAt: new Date().toISOString() });
+  input.value=''; saveState(); renderView();
+}
+function toggleGoal(key,id){
+  const g = state.goals[key].find(x=>x.id===id); if (!g) return;
+  g.done = !g.done; if (g.done) addXP(5,'Goal completed');
+  saveState(); renderView();
+}
+function deleteGoal(key,id){ state.goals[key] = state.goals[key].filter(x=>x.id!==id); saveState(); renderView(); }
+
+/* ============================================================
+   VIEW: SETTINGS
+   ============================================================ */
+RENDERERS.settings = function(el){
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Settings</div><div class="view-sub">Exam dates, revision rules, theme, and your data.</div></div></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">👤 Account</div>
+        <p style="font-size:12.5px; color:var(--text-2); margin-bottom:14px;">Signed in as <b style="color:var(--text-1);">${escapeHtml(authEmail||'')}</b>. Your data is saved to this account and available from any device.</p>
+        <button class="btn btn-ghost btn-block" onclick="logOut()">Sign out</button>
+      </div>
+      <div class="card">
+        <div class="card-title">${TRACK_ICON[currentTrack()]} Exam Track</div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+          <div style="font-family:var(--font-display); font-size:20px; font-weight:700;">${currentTrack()}</div>
+          <span class="tag tag-brand">${currentTrackConfig().tagline}</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-2); margin-bottom:14px;">Subjects: ${Object.keys(state.syllabus).join(', ')}</p>
+        <button class="btn btn-ghost btn-block" onclick="openSwitchTrackModal()">Switch to ${currentTrack()==='JEE'?'NEET':'JEE'}</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Exam Countdown Dates</div>
+        ${Object.keys(state.examDates).map(k=>`
+          <div class="field"><label>${k}</label><input type="date" value="${state.examDates[k]}" onchange="updateExamDate('${k}', this.value)"></div>
+        `).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">🔁 Revision Algorithm</div>
+        <div class="field"><label>Revision intervals (days, comma separated)</label>
+          <input type="text" id="rev-intervals" value="${state.revisionIntervals.join(', ')}">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="saveRevisionIntervals()">Save Intervals</button>
+        <div class="divider"></div>
+        <div class="field"><label>Daily study hour target</label><input type="number" step="0.5" value="${state.settings.dailyHourTarget}" onchange="state.settings.dailyHourTarget=parseFloat(this.value)||6; saveState();"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎨 Accent Theme</div>
+        <div style="display:flex; gap:10px;">
+          ${[['violet','#7C6CF0'],['emerald','#2DD4A7'],['amber','#F5B942'],['rose','#F0576B']].map(([a,c])=>`
+            <div onclick="setAccent('${a}')" style="width:40px;height:40px;border-radius:50%;background:${c};cursor:pointer; border:2px solid ${state.settings.accent===a?'#fff':'transparent'};"></div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💾 Backup & Export</div>
+        <button class="btn btn-ghost btn-block" style="margin-bottom:8px;" onclick="exportJSON()">Export Full Backup (JSON)</button>
+        <button class="btn btn-ghost btn-block" style="margin-bottom:8px;" onclick="exportCSV()">Export Study Logs (CSV)</button>
+        <label style="margin-top:6px;">Restore from backup</label>
+        <input type="file" id="importFile" accept=".json" onchange="importJSON(event)">
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px; border-color:var(--danger);">
+      <div class="card-title" style="color:var(--danger);">⚠ Reset</div>
+      <p style="font-size:12px; color:var(--text-2); margin-bottom:10px;">This permanently deletes all local data on this device. Export a backup first.</p>
+      <button class="btn btn-danger" onclick="resetAllData()">Erase All Data</button>
+    </div>
+  `;
+};
+function updateExamDate(key,val){ state.examDates[key]=val; saveState(); renderCountdownStrip(); toast('Updated', key+' → '+fmtDate(val), 'brand', 2000); }
+function saveRevisionIntervals(){
+  const vals = document.getElementById('rev-intervals').value.split(',').map(v=>parseInt(v.trim())).filter(v=>!isNaN(v)&&v>0);
+  if (!vals.length){ toast('Invalid intervals','Enter comma-separated numbers like 1, 3, 7, 30','danger'); return; }
+  state.revisionIntervals = vals.sort((a,b)=>a-b); saveState();
+  toast('Saved','New sessions will use: '+state.revisionIntervals.join(', ')+' days','success');
+}
+function setAccent(a){ state.settings.accent=a; document.body.setAttribute('data-accent', a); saveState(); renderView(); }
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `apex-backup-${todayISO()}.json`; a.click();
+  toast('Backup exported','','success',2000);
+}
+function exportCSV(){
+  const rows = [['Date','Subject','Chapter','Sources','Questions','Time(min)','Difficulty']];
+  state.logs.forEach(l=> rows.push([l.date, l.subject, l.chapter, l.sources.join('|'), l.questionCount||'', l.timeSpentMin, l.difficulty]));
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `apex-logs-${todayISO()}.csv`; a.click();
+  toast('CSV exported','','success',2000);
+}
+function importJSON(evt){
+  const file = evt.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      openModal(`
+        <div class="modal-head"><h3>Restore Backup?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+        <p style="font-size:13px; color:var(--text-2); margin-bottom:16px;">This will replace all current data on this device with the uploaded backup. This can't be undone.</p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-danger btn-block" onclick="confirmRestore()">Yes, replace my data</button>
+          <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>
+        </div>
+      `);
+      window._pendingRestore = parsed;
+    }catch(e){ toast('Invalid file','Could not parse that JSON backup.','danger'); }
+  };
+  reader.readAsText(file);
+}
+function confirmRestore(){
+  state = deepMerge(DEFAULT_STATE(), window._pendingRestore);
+  saveState(); closeModal(); renderNav(); renderCountdownStrip(); renderView();
+  toast('Backup restored','','success');
+}
+function resetAllData(){
+  openModal(`
+    <div class="modal-head"><h3>Erase everything?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <p style="font-size:13px; color:var(--text-2); margin-bottom:16px;">This deletes all logs, revisions, tests, and progress on this device permanently.</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-danger btn-block" onclick="confirmReset()">Yes, erase everything</button>
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function confirmReset(){
+  state = DEFAULT_STATE(); saveState(); closeModal(); renderNav(); renderCountdownStrip(); renderView();
+  toast('All data erased','','danger');
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+/* ============================================================
+   ONBOARDING / TRACK SELECTION
+   ============================================================ */
+const TRACK_ICON = { JEE: '🚀', NEET: '🩺' };
+function renderOnboardCards(){
+  const wrap = document.getElementById('onboardCards');
+  wrap.innerHTML = Object.keys(TRACK_CONFIG).map(key=>{
+    const cfg = TRACK_CONFIG[key];
+    const trackHex = key==='JEE' ? '#7C6CF0' : '#6FCF57';
+    return `<div class="track-card" style="--track-color:${trackHex}; --track-dim:${trackHex}26;" data-track="${key}">
+      <div class="tc-icon">${TRACK_ICON[key]}</div>
+      <div class="tc-title">${key}</div>
+      <div class="tc-tagline">${cfg.tagline}</div>
+      <div class="tc-subjects">${Object.keys(cfg.syllabus).map(s=>`<span class="tag ${SUBJECT_TAGCLASS[s]}">${s}</span>`).join('')}</div>
+      <div class="tc-cta">Start with ${key}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('.track-card').forEach(el=>{
+    el.addEventListener('click', ()=> chooseTrack(el.dataset.track));
+  });
+}
+function chooseTrack(track, isSwitch){
+  state.settings.track = track;
+  state.syllabus = JSON.parse(JSON.stringify(TRACK_CONFIG[track].syllabus));
+  state.examDates = JSON.parse(JSON.stringify(TRACK_CONFIG[track].examDates));
+  Object.keys(state.syllabus).forEach(subj => state.syllabus[subj].forEach(ch => ensureChapterProgress(subj, ch)));
+  applyBranding();
+  saveState();
+  document.getElementById('onboardOverlay').classList.remove('show');
+  chapterFilterSubject = 'Physics'; subjectTab = 'Physics';
+  renderNav(); renderCountdownStrip(); renderView();
+  if (isSwitch){ closeModal(); toast('Switched to '+track, 'Subjects, syllabus and exam dates updated. Your history is kept.', 'success'); }
+}
+function applyBranding(){
+  const cfg = currentTrackConfig();
+  document.title = `APEX — ${cfg.fullTitle}`;
+  const sub = document.getElementById('brandSubtitle');
+  if (sub) sub.textContent = cfg.fullTitle.toUpperCase();
+}
+function openSwitchTrackModal(){
+  const other = currentTrack()==='JEE' ? 'NEET' : 'JEE';
+  openModal(`
+    <div class="modal-head"><h3>Switch to ${other}?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <p style="font-size:13px; color:var(--text-2); margin-bottom:16px;">Your subjects, chapter list and exam countdowns will switch to ${other}. Nothing already logged is deleted — it just won't show in the ${other} tracker.</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary btn-block" onclick="chooseTrack('${other}', true)">Switch to ${other}</button>
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+let authMode = 'login'; // or 'register'
+function wireAuthScreen(){
+  const toggleLink = document.getElementById('authToggleLink');
+  toggleLink.addEventListener('click', (e)=>{
+    e.preventDefault();
+    authMode = authMode==='login' ? 'register' : 'login';
+    document.getElementById('authTitle').textContent = authMode==='login' ? 'Sign in' : 'Create your account';
+    document.getElementById('authSubmitBtn').textContent = authMode==='login' ? 'Sign in' : 'Create account';
+    document.getElementById('authToggleText').textContent = authMode==='login' ? "Don't have an account?" : 'Already have an account?';
+    toggleLink.textContent = authMode==='login' ? 'Create one' : 'Sign in';
+    document.getElementById('authError').style.display = 'none';
+  });
+  const submit = async ()=>{
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+    const btn = document.getElementById('authSubmitBtn');
+    btn.disabled = true; const originalLabel = btn.textContent; btn.textContent = 'Please wait…';
+    try{
+      const path = authMode==='login' ? '/api/auth/login' : '/api/auth/register';
+      const res = await apiCall(path, { method:'POST', body: JSON.stringify({ email, password }) });
+      setAuth(res.token, res.email);
+      document.getElementById('authOverlay').classList.remove('show');
+      await afterAuth();
+    }catch(e){
+      errEl.textContent = e.message || 'Something went wrong.';
+      errEl.style.display = 'block';
+    }finally{
+      btn.disabled = false; btn.textContent = originalLabel;
+    }
+  };
+  document.getElementById('authSubmitBtn').addEventListener('click', submit);
+  document.getElementById('authPassword').addEventListener('keydown', (e)=>{ if (e.key==='Enter') submit(); });
+  document.getElementById('authEmail').addEventListener('keydown', (e)=>{ if (e.key==='Enter') submit(); });
+}
+function showAuthScreen(){
+  wireAuthScreen();
+  document.getElementById('authOverlay').classList.add('show');
+}
+
+async function afterAuth(){
+  await loadState();
+  document.body.setAttribute('data-accent', state.settings.accent || 'violet');
+
+  const hasExistingData = state.logs.length>0 || Object.keys(state.chapterProgress).length>0;
+  if (!state.settings.track){
+    if (hasExistingData){
+      state.settings.track = 'JEE';
+      saveState();
+    } else {
+      renderOnboardCards();
+      document.getElementById('onboardOverlay').classList.add('show');
+      return; // wait for the user's track choice — chooseTrack() continues boot
+    }
+  }
+
+  applyBranding();
+  Object.keys(state.syllabus).forEach(subj => state.syllabus[subj].forEach(ch => ensureChapterProgress(subj, ch)));
+  renderNav();
+  renderCountdownStrip();
+  renderView();
+  checkAchievements();
+  saveState();
+}
+
+async function init(){
+  if (!authToken){ showAuthScreen(); return; }
+  try{
+    const me = await apiCall('/api/auth/me');
+    authEmail = me.email;
+    await afterAuth();
+  }catch(e){
+    clearAuth();
+    showAuthScreen();
+  }
+}
+init();
+</script>
+</body>
+</html>

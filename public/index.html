@@ -278,6 +278,32 @@ input, textarea, select{ font-family: inherit; }
 .stat-delta.up{ color: var(--success); }
 .stat-delta.down{ color: var(--danger); }
 
+/* ---- Notion-style stat highlight pills (used on Revision Log / Test Performance) ---- */
+.pill-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+.stat-pill{
+  display:flex; align-items:center; gap:10px;
+  background: var(--glass); border:1px solid var(--glass-border); border-radius: var(--r-pill);
+  padding: 11px 18px 11px 14px; box-shadow: var(--shadow-1);
+}
+.stat-pill .sp-icon{ font-size:17px; line-height:1; }
+.stat-pill .sp-label{ font-size:12px; color:var(--text-2); font-weight:500; }
+.stat-pill .sp-value{ font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--text-1); margin-left:2px; }
+.quote-flourish{
+  text-align:center; font-style:italic; font-weight:600; font-size:13.5px; color:var(--text-2);
+  padding: 20px 16px 4px; display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.notion-link-row{
+  display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius: var(--r-md);
+  background: var(--glass); border:1px solid var(--glass-border); margin-bottom:9px; cursor:pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.notion-link-row:hover{ background: var(--glass-hover); border-color: var(--glass-strong); transform: translateX(2px); }
+.notion-link-row .nl-icon{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.notion-link-row .nl-text{ flex:1; min-width:0; }
+.notion-link-row .nl-title{ font-size:13.5px; font-weight:600; }
+.notion-link-row .nl-sub{ font-size:11.5px; color:var(--text-3); margin-top:1px; }
+.tag-doubt{ background: rgba(240,87,107,0.12); color: var(--danger); }
+
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:7px;
   padding: 9px 16px; border-radius: var(--r-sm);
@@ -501,6 +527,129 @@ body[data-accent="rose"] { --brand:#F0576B; --brand-2:#C86DD7; }
 .track-card .tc-cta{ font-size:12.5px; font-weight:600; color:var(--text-1); display:flex; align-items:center; gap:6px; }
 .track-card .tc-cta svg{ width:14px;height:14px; transition: transform .2s; }
 .track-card:hover .tc-cta svg{ transform: translateX(4px); }
+
+/* ============================================================
+   AUTH SCREEN — split-screen cosmic login
+   ============================================================ */
+.auth-overlay{
+  position:fixed; inset:0; z-index:5100; display:none;
+  background: var(--bg);
+}
+.auth-overlay.show{ display:flex; }
+
+.auth-hero{
+  position:relative; flex:1.15; min-width:0; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding: 48px 52px;
+}
+.auth-sky{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(900px 500px at 78% 8%, rgba(124,108,240,0.30), transparent 60%),
+    radial-gradient(700px 500px at 15% 55%, rgba(200,109,215,0.16), transparent 65%),
+    linear-gradient(180deg, #0A0713 0%, #100A1F 55%, #150C24 100%);
+}
+.auth-moon{
+  position:absolute; top:64px; right:110px; width:120px; height:120px; border-radius:50%;
+  background: radial-gradient(circle at 35% 32%, #F3EEFF, #C9B8FF 55%, #8F79E8 100%);
+  box-shadow: 0 0 70px 18px rgba(150,125,255,0.35), 0 0 140px 50px rgba(124,108,240,0.15);
+}
+.auth-horizon-glow{
+  position:absolute; left:0; right:0; bottom:0; height:220px;
+  background: radial-gradient(600px 160px at 55% 100%, rgba(255,140,110,0.20), transparent 70%);
+  pointer-events:none;
+}
+.auth-stars, .auth-comets{ position:absolute; inset:0; width:100%; height:100%; }
+.auth-stars .star{ fill:#fff; }
+.star.tw1{ animation: twinkle 3.2s ease-in-out infinite; }
+.star.tw2{ animation: twinkle 4.1s ease-in-out infinite .6s; }
+.star.tw3{ animation: twinkle 2.6s ease-in-out infinite 1.2s; }
+@keyframes twinkle{ 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+.comet{ transform-origin: 0 0; opacity:0; }
+.comet1{ animation: cometDrift1 7s ease-in infinite; }
+.comet2{ animation: cometDrift2 9s ease-in infinite 3s; }
+@keyframes cometDrift1{
+  0%{ transform: translate(40px,60px); opacity:0; }
+  8%{ opacity:1; }
+  35%{ transform: translate(220px,240px); opacity:0; }
+  100%{ opacity:0; }
+}
+@keyframes cometDrift2{
+  0%{ transform: translate(360px,30px); opacity:0; }
+  10%{ opacity:.9; }
+  40%{ transform: translate(150px,220px); opacity:0; }
+  100%{ opacity:0; }
+}
+.auth-ground{ position:absolute; left:0; right:0; bottom:0; width:100%; height:38%; }
+.auth-figure{ opacity:0.92; }
+
+.auth-hero-content{ position:relative; z-index:2; margin-bottom:28px; }
+.auth-hero-logo{ display:flex; align-items:center; gap:12px; font-family:var(--font-display); font-size:30px; font-weight:700; color:#fff; margin-bottom:18px; }
+.auth-logo-mark{
+  display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:14px;
+  background: var(--brand-grad); font-size:20px; box-shadow: 0 8px 24px rgba(124,108,240,0.45);
+}
+.auth-hero-logo small{ display:block; font-family:var(--font-body); font-size:10.5px; font-weight:600; letter-spacing:2px; color:var(--text-2); margin-top:2px; }
+.auth-hero-tagline{ font-family:var(--font-display); font-size:34px; font-weight:700; color:#fff; letter-spacing:-0.5px; margin-bottom:8px; }
+.grad-txt{ background:var(--brand-grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.grad-txt2{ background:linear-gradient(135deg,var(--physics),var(--brand)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.auth-hero-sub{ font-size:14.5px; color:var(--text-2); }
+.auth-quote-card{
+  position:relative; z-index:2; display:flex; align-items:center; gap:12px;
+  background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+  border-radius: var(--r-md); padding:13px 16px; width:fit-content;
+}
+.auth-quote-card div{ display:flex; flex-direction:column; font-size:11.5px; }
+.auth-quote-card span{ color:var(--text-2); }
+.auth-quote-card b{ background:var(--brand-grad); -webkit-background-clip:text; background-clip:text; color:transparent; font-size:13px; }
+
+.auth-panel{
+  flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 40px 44px; background: var(--bg-soft); border-left:1px solid var(--glass-border); overflow-y:auto;
+}
+.auth-card{ width:100%; max-width:380px; }
+.auth-card-icon{
+  width:52px; height:52px; border-radius:16px; background:var(--brand-grad);
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px;
+  margin: 0 auto 20px; box-shadow: 0 10px 30px rgba(124,108,240,0.4);
+}
+.auth-card h1{ font-family:var(--font-display); font-size:23px; font-weight:700; text-align:center; margin-bottom:4px; }
+.auth-card > p{ text-align:center; }
+.input-icon-field{
+  position:relative; margin-bottom:14px; display:flex; align-items:center;
+  background: var(--bg); border:1px solid var(--glass-border); border-radius: var(--r-sm);
+  padding: 0 12px; transition: border-color .15s;
+}
+.input-icon-field:focus-within{ border-color: var(--brand); }
+.input-icon-field svg{ width:16px; height:16px; color:var(--text-3); flex-shrink:0; }
+.input-icon-field input{ background:none; border:none; padding:11px 10px; font-size:13.5px; }
+.input-icon-field input:focus{ outline:none; }
+.pw-toggle{ background:none; border:none; color:var(--text-3); display:flex; padding:4px; }
+.pw-toggle:hover{ color:var(--text-1); }
+.pw-toggle svg{ width:16px; height:16px; }
+.auth-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.auth-submit-btn{ display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; padding:12px; }
+.auth-submit-btn svg{ width:16px; height:16px; transition: transform .2s; }
+.auth-submit-btn:hover svg{ transform: translateX(3px); }
+
+.auth-features-strip{
+  width:100%; max-width:380px; margin-top:32px; padding-top:24px; border-top:1px solid var(--glass-border);
+  display:grid; grid-template-columns: 1fr 1fr; gap:14px;
+}
+.auth-feature{ display:flex; align-items:flex-start; gap:9px; }
+.af-icon{ width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.auth-feature b{ display:block; font-size:11.5px; font-weight:600; }
+.auth-feature span{ font-size:10px; color:var(--text-3); }
+
+@media (max-width: 860px){
+  .auth-overlay.show{ flex-direction:column; overflow-y:auto; }
+  .auth-hero{ flex:none; min-height:280px; padding:32px 28px; }
+  .auth-hero-tagline{ font-size:26px; }
+  .auth-quote-card{ display:none; }
+  .auth-panel{ border-left:none; border-top:1px solid var(--glass-border); padding:32px 24px 40px; }
+  .auth-features-strip{ grid-template-columns:1fr; }
+}
+
 </style>
 </head>
 <body data-accent="violet">
@@ -557,20 +706,99 @@ body[data-accent="rose"] { --brand:#F0576B; --brand-2:#C86DD7; }
   <div class="modal" id="modalContent"></div>
 </div>
 
-<div class="onboard-overlay" id="authOverlay">
-  <div class="onboard-wrap" style="max-width:400px;">
-    <div class="onboard-mark"><span class="dot"></span> APEX</div>
-    <h1 class="onboard-title" id="authTitle" style="font-size:26px;">Sign in</h1>
-    <p class="onboard-sub" style="margin-bottom:24px;">Your study data is tied to your account — sign in from any device to pick up where you left off.</p>
-    <div class="card" style="text-align:left;">
-      <div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.com" autocomplete="username"></div>
-      <div class="field"><label>Password</label><input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password"></div>
-      <div id="authError" style="display:none; font-size:12.5px; color:var(--danger); background:var(--danger-dim); padding:9px 12px; border-radius:var(--r-sm); margin-bottom:14px;"></div>
-      <button class="btn btn-primary btn-block" id="authSubmitBtn">Sign in</button>
-      <div style="text-align:center; margin-top:16px; font-size:12.5px; color:var(--text-2);">
-        <span id="authToggleText">Don't have an account?</span>
-        <a href="#" id="authToggleLink" style="color:var(--brand); font-weight:600;">Create one</a>
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-hero">
+    <div class="auth-sky"></div>
+    <div class="auth-moon"></div>
+    <div class="auth-horizon-glow"></div>
+    <svg class="auth-stars" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid slice">
+      <circle class="star tw1" cx="60" cy="80" r="1.6"/><circle class="star tw2" cx="140" cy="40" r="1.2"/>
+      <circle class="star tw3" cx="220" cy="110" r="1.8"/><circle class="star tw1" cx="320" cy="60" r="1.3"/>
+      <circle class="star tw2" cx="410" cy="130" r="1.5"/><circle class="star tw3" cx="480" cy="70" r="1.1"/>
+      <circle class="star tw1" cx="90" cy="200" r="1.4"/><circle class="star tw2" cx="250" cy="180" r="1.2"/>
+      <circle class="star tw3" cx="380" cy="220" r="1.6"/><circle class="star tw1" cx="530" cy="190" r="1.3"/>
+      <circle class="star tw2" cx="40" cy="300" r="1.2"/><circle class="star tw3" cx="180" cy="280" r="1.5"/>
+      <circle class="star tw1" cx="300" cy="320" r="1.1"/><circle class="star tw2" cx="450" cy="290" r="1.4"/>
+      <circle class="star tw3" cx="560" cy="330" r="1.2"/><circle class="star tw1" cx="120" cy="380" r="1.3"/>
+      <circle class="star tw2" cx="270" cy="400" r="1.6"/><circle class="star tw3" cx="420" cy="370" r="1.2"/>
+    </svg>
+    <svg class="auth-comets" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="cometGrad1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#B9A7FF" stop-opacity="0.9"/>
+        </linearGradient>
+        <linearGradient id="cometGrad2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#8FD9FF" stop-opacity="0.85"/>
+        </linearGradient>
+      </defs>
+      <g class="comet comet1"><line x1="0" y1="0" x2="70" y2="70" stroke="url(#cometGrad1)" stroke-width="2" stroke-linecap="round"/><circle cx="70" cy="70" r="2.4" fill="#fff"/></g>
+      <g class="comet comet2"><line x1="0" y1="0" x2="55" y2="55" stroke="url(#cometGrad2)" stroke-width="1.6" stroke-linecap="round"/><circle cx="55" cy="55" r="1.8" fill="#fff"/></g>
+    </svg>
+    <svg class="auth-ground" viewBox="0 0 600 260" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,260 0,150 60,110 130,160 190,90 260,140 330,70 400,145 470,100 540,155 600,120 600,260" fill="#0A0713"/>
+      <polygon points="0,260 0,190 90,165 170,200 260,160 350,205 440,175 520,210 600,185 600,260" fill="#120A22" opacity="0.9"/>
+      <g class="auth-figure" transform="translate(70,150)">
+        <ellipse cx="18" cy="70" rx="34" ry="9" fill="#000" opacity="0.35"/>
+        <path d="M0 68 Q2 40 20 34 Q34 30 34 18 Q34 6 22 4 Q10 3 8 14 Q7 22 0 26 Q-6 30 -4 40 Q-2 55 0 68 Z" fill="#080311"/>
+        <circle cx="21" cy="10" r="7" fill="#080311"/>
+      </g>
+    </svg>
+    <div class="auth-hero-content">
+      <div class="auth-hero-logo">
+        <span class="auth-logo-mark">▲</span>
+        <span>APEX<small id="authHeroBrand">EXAM COMMAND CENTER</small></span>
       </div>
+      <div class="auth-hero-tagline">Dream. <span class="grad-txt">Plan.</span> <span class="grad-txt2">Conquer.</span></div>
+      <div class="auth-hero-sub" id="authHeroSub">Your journey to your dream college starts here.</div>
+    </div>
+    <div class="auth-quote-card">
+      <span style="font-size:16px;">🚀</span>
+      <div><span>Discipline Today</span><b>Success Tomorrow</b></div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-card-icon">▲</div>
+      <h1 id="authTitle">Welcome Back 👋</h1>
+      <p id="authSubtitle" style="color:var(--text-2); font-size:13px; margin-bottom:22px;">Sign in to continue your journey</p>
+
+      <div class="input-icon-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>
+        <input type="email" id="authEmail" placeholder="Email address" autocomplete="username">
+      </div>
+      <div class="input-icon-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+        <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <div class="auth-row">
+        <label style="display:flex; align-items:center; gap:7px; text-transform:none; letter-spacing:0; font-weight:500; color:var(--text-2); font-size:12.5px;">
+          <input type="checkbox" class="chk" id="rememberMe" checked> Remember me
+        </label>
+      </div>
+
+      <div id="authError" style="display:none; font-size:12.5px; color:var(--danger); background:var(--danger-dim); padding:9px 12px; border-radius:var(--r-sm); margin-bottom:14px;"></div>
+
+      <button class="btn btn-primary btn-block auth-submit-btn" id="authSubmitBtn">
+        <span id="authSubmitLabel">Sign in</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div style="text-align:center; margin-top:18px; font-size:12.5px; color:var(--text-2);">
+        <span id="authToggleText">Don't have an account?</span>
+        <a href="#" id="authToggleLink" style="color:var(--brand); font-weight:600;">Create Account</a>
+      </div>
+    </div>
+
+    <div class="auth-features-strip">
+      <div class="auth-feature"><span class="af-icon" style="background:var(--brand-dim,rgba(124,108,240,.18)); color:var(--brand);">🛡️</span><div><b>Secure & Private</b><span>Your data stays yours</span></div></div>
+      <div class="auth-feature"><span class="af-icon" style="background:var(--physics-dim); color:var(--physics);">☁️</span><div><b>Cloud Sync</b><span>Access anywhere, anytime</span></div></div>
+      <div class="auth-feature"><span class="af-icon" style="background:var(--chemistry-dim); color:var(--chemistry);">📊</span><div><b>Smart Analytics</b><span>Track, analyze, improve</span></div></div>
+      <div class="auth-feature"><span class="af-icon" style="background:var(--maths-dim); color:var(--maths);">🎯</span><div><b>Stay Consistent</b><span>Build habits, hit goals</span></div></div>
     </div>
   </div>
 </div>
@@ -648,6 +876,7 @@ const DEFAULT_STATE = () => ({
   flashcards: [],       // {id, logId, subject, chapter, q, a, difficulty, nextReview}
   notes: [],           // {id, logId, subject, chapter, content(html), createdAt}
   tests: [],           // test entries
+  doubts: [],          // {id, subject, chapter, text, status: open/resolved, createdAt, resolvedAt}
   chapterProgress: {},  // key `${subject}::${chapter}` -> {lecture,notes,ncert,module,pyq,rev1..4,mock,mastered}
   timeSessions: [],     // {id, subject, start, end, durationSec, type: manual/pomodoro}
   goals: { daily:[], weekly:[], monthly:[], yearly:[], life:[] },
@@ -677,8 +906,8 @@ function deepMerge(base, incoming){
 /* ============================================================
    AUTH + SERVER-BACKED STORAGE
    ============================================================ */
-let authToken = localStorage.getItem('apex_token') || null;
-let authEmail = localStorage.getItem('apex_email') || null;
+let authToken = localStorage.getItem('apex_token') || sessionStorage.getItem('apex_token') || null;
+let authEmail = localStorage.getItem('apex_email') || sessionStorage.getItem('apex_email') || null;
 
 async function apiCall(path, opts={}){
   const headers = Object.assign({ 'Content-Type':'application/json' }, opts.headers||{});
@@ -689,14 +918,18 @@ async function apiCall(path, opts={}){
   if (!res.ok){ const err = new Error((body&&body.error)||('Request failed ('+res.status+')')); err.status=res.status; throw err; }
   return body;
 }
-function setAuth(token, email){
+function setAuth(token, email, remember=true){
   authToken = token; authEmail = email;
-  localStorage.setItem('apex_token', token);
-  localStorage.setItem('apex_email', email);
+  const store = remember ? localStorage : sessionStorage;
+  const other = remember ? sessionStorage : localStorage;
+  store.setItem('apex_token', token);
+  store.setItem('apex_email', email);
+  other.removeItem('apex_token'); other.removeItem('apex_email');
 }
 function clearAuth(){
   authToken = null; authEmail = null;
   localStorage.removeItem('apex_token'); localStorage.removeItem('apex_email');
+  sessionStorage.removeItem('apex_token'); sessionStorage.removeItem('apex_email');
 }
 function logOut(){
   clearAuth();
@@ -803,6 +1036,7 @@ const ICONS = {
   analytics:'<path d="M18 20V10M12 20V4M6 20v-6"/>',
   goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   achieve:'<circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 22l5-3 5 3-1.21-8.11"/>',
+  doubt:'<path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>',
   settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.63.77 1.05 1.43 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
 };
 function icon(name, cls='svg-icon'){ return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`; }
@@ -816,12 +1050,13 @@ const NAV = [
     { id:'logger', label:'Study Logger', icon:'logger' },
   ]},
   { group:'Retention', items:[
-    { id:'revisions', label:'Revisions', icon:'revision', badge:()=>dueRevisionCount() },
+    { id:'revisions', label:'Revision Log', icon:'revision', badge:()=>dueRevisionCount() },
     { id:'calendar', label:'Calendar', icon:'calendar' },
     { id:'flashcards', label:'Flashcards', icon:'flash' },
+    { id:'doubts', label:'Doubts Tracker', icon:'doubt', badge:()=>openDoubtCount() },
   ]},
   { group:'Performance', items:[
-    { id:'tests', label:'Test Analysis', icon:'test' },
+    { id:'tests', label:'Test Performance', icon:'test' },
     { id:'weakareas', label:'Weak Areas', icon:'weak' },
     { id:'chapters', label:'Chapter Tracker', icon:'chapter' },
     { id:'subjects', label:'Subjects', icon:'subject' },
@@ -967,6 +1202,7 @@ function buildSearchIndex(){
   state.revisions.forEach(r=> idx.push({ tag:'Revision', text:`${r.subject} · ${r.chapter} — due ${fmtDateShort(r.dueDate)}`, view:'revisions' }));
   state.tests.forEach(t=> idx.push({ tag:'Test', text:`${t.subject} test — ${t.marks} marks`, view:'tests' }));
   state.notes.forEach(n=> idx.push({ tag:'Note', text:`${n.subject} · ${n.chapter} notes`, view:'logger', noteId:n.id }));
+  state.doubts.forEach(d=> idx.push({ tag:'Doubt', text:`${d.subject} · ${d.chapter} — ${d.text.slice(0,80)}`, view:'doubts' }));
   return idx;
 }
 const searchInput = document.getElementById('globalSearch');
@@ -1384,46 +1620,54 @@ RENDERERS.revisions = function(el){
   const upcoming = state.revisions.filter(r=>r.status==='pending' && r.dueDate>today).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
   const missed = state.revisions.filter(r=>r.status==='missed');
   const done = state.revisions.filter(r=>r.status==='done').sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||''));
+  const completionRate = state.revisions.length ? Math.round(done.length/state.revisions.length*100) : 0;
 
-  function rowHtml(r, showActions){
-    return `<div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--glass-border);">
-      <span class="tag ${SUBJECT_TAGCLASS[r.subject]}">${r.subject.slice(0,3)}</span>
-      <div style="flex:1;">
-        <div style="font-size:13px;">${escapeHtml(r.chapter)}</div>
-        <div style="font-size:11px; color:var(--text-3);">Day ${r.intervalDays} revision · due ${fmtDate(r.dueDate)}</div>
+  function linkRow(r, kind){
+    const iconMap = { due:'⏰', missed:'🔴', upcoming:'🔵', done:'✅' };
+    const bgMap = { due:'var(--warning-dim)', missed:'var(--danger-dim)', upcoming:'var(--physics-dim)', done:'var(--success-dim)' };
+    return `<div class="notion-link-row">
+      <span class="nl-icon" style="background:${bgMap[kind]}">${iconMap[kind]}</span>
+      <div class="nl-text">
+        <div class="nl-title">${escapeHtml(r.chapter)} <span class="tag ${SUBJECT_TAGCLASS[r.subject]}" style="margin-left:6px;">${r.subject.slice(0,3)}</span></div>
+        <div class="nl-sub">${kind==='done' ? `Completed ${fmtDateShort(r.doneDate)}` : `Day ${r.intervalDays} revision · due ${fmtDate(r.dueDate)}`}</div>
       </div>
-      ${showActions ? `
+      ${kind!=='done' ? `
         <button class="btn btn-sm btn-success" onclick="markRevisionDone('${r.id}')">Done</button>
-        <input type="date" style="width:130px;" value="${r.dueDate}" onchange="rescheduleRevision('${r.id}', this.value)">
-      ` : r.status==='done' ? `<span class="tag tag-success">Completed ${fmtDateShort(r.doneDate)}</span>` : ''}
+        <input type="date" style="width:128px;" value="${r.dueDate}" onchange="rescheduleRevision('${r.id}', this.value)">
+      ` : ''}
     </div>`;
   }
 
   el.innerHTML = `
-    <div class="view-header"><div><div class="view-title">Spaced Revision</div><div class="view-sub">Auto-scheduled at +1, +3, +7, +30 days from every logged session.</div></div></div>
-    <div class="grid grid-3" style="margin-bottom:16px;">
-      <div class="card stat-card"><div class="stat-label">Due Today</div><div class="stat-value" style="color:var(--warning)">${dueToday.length}</div></div>
-      <div class="card stat-card"><div class="stat-label">Missed</div><div class="stat-value" style="color:var(--danger)">${missed.length}</div></div>
-      <div class="card stat-card"><div class="stat-label">Completed</div><div class="stat-value" style="color:var(--success)">${done.length}</div></div>
+    <div class="view-header"><div><div class="view-title">Revision Log</div><div class="view-sub">Auto-scheduled at +${state.revisionIntervals.join(', +')} days from every logged session.</div></div></div>
+
+    <div class="pill-row">
+      <div class="stat-pill"><span class="sp-icon">🔥</span><span class="sp-label">Streak</span><span class="sp-value">${state.profile.streak}d</span></div>
+      <div class="stat-pill"><span class="sp-icon">✅</span><span class="sp-label">Completed</span><span class="sp-value">${done.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">⏰</span><span class="sp-label">Due Today</span><span class="sp-value">${dueToday.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">🔴</span><span class="sp-label">Missed</span><span class="sp-value">${missed.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">📈</span><span class="sp-label">Completion Rate</span><span class="sp-value">${completionRate}%</span></div>
     </div>
+
     <div class="grid grid-2">
       <div class="card">
-        <div class="card-title">🟡 Due Today</div>
-        ${dueToday.length ? dueToday.map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>Nothing due today.</p></div>`}
+        <div class="card-title">⏰ Due Today</div>
+        ${dueToday.length ? dueToday.map(r=>linkRow(r,'due')).join('') : `<div class="empty-state"><p>Nothing due today.</p></div>`}
       </div>
       <div class="card">
         <div class="card-title">🔴 Missed — reschedule these</div>
-        ${missed.length ? missed.map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>No missed revisions. Great discipline.</p></div>`}
+        ${missed.length ? missed.map(r=>linkRow(r,'missed')).join('') : `<div class="empty-state"><p>No missed revisions. Great discipline.</p></div>`}
       </div>
       <div class="card">
         <div class="card-title">🔵 Upcoming</div>
-        ${upcoming.length ? upcoming.slice(0,12).map(r=>rowHtml(r,true)).join('') : `<div class="empty-state"><p>Nothing scheduled yet.</p></div>`}
+        ${upcoming.length ? upcoming.slice(0,12).map(r=>linkRow(r,'upcoming')).join('') : `<div class="empty-state"><p>Nothing scheduled yet.</p></div>`}
       </div>
       <div class="card">
-        <div class="card-title">🟢 Completed History</div>
-        ${done.length ? done.slice(0,12).map(r=>rowHtml(r,false)).join('') : `<div class="empty-state"><p>Completed revisions will show here.</p></div>`}
+        <div class="card-title">✅ Completed History</div>
+        ${done.length ? done.slice(0,12).map(r=>linkRow(r,'done')).join('') : `<div class="empty-state"><p>Completed revisions will show here.</p></div>`}
       </div>
     </div>
+    <div class="quote-flourish">🌱 Small efforts everyday lead to massive success someday 🌱</div>
   `;
   saveState();
 };
@@ -1610,18 +1854,23 @@ RENDERERS.tests = function(el){
   const tests = [...state.tests].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const avgMarks = tests.length ? (tests.reduce((s,t)=>s+(t.marks||0),0)/tests.length).toFixed(1) : '—';
   const avgAcc = tests.length ? (tests.reduce((s,t)=>s+computeTestMetrics(t).accuracy,0)/tests.length).toFixed(1) : '—';
+  const highest = tests.length ? tests.reduce((best,t)=> (t.marks/(t.maxMarks||1)) > (best.marks/(best.maxMarks||1)) ? t : best) : null;
+  const latest = tests.length ? tests[0] : null;
 
   el.innerHTML = `
     <div class="view-header">
-      <div><div class="view-title">Test Analysis</div><div class="view-sub">Log every test to track accuracy, speed, negative marking and performance trends.</div></div>
+      <div><div class="view-title">Test Performance</div><div class="view-sub">Log every test to track accuracy, speed, negative marking and performance trends.</div></div>
       <button class="btn btn-primary" onclick="openAddTest()">+ Add Test Result</button>
     </div>
-    <div class="grid grid-4" style="margin-bottom:16px;">
-      <div class="card stat-card"><div class="stat-label">Tests Logged</div><div class="stat-value">${tests.length}</div></div>
-      <div class="card stat-card"><div class="stat-label">Average Marks</div><div class="stat-value">${avgMarks}</div></div>
-      <div class="card stat-card"><div class="stat-label">Average Accuracy</div><div class="stat-value">${avgAcc}${tests.length?'%':''}</div></div>
-      <div class="card stat-card"><div class="stat-label">${currentTrackConfig().scoreLabel}</div><div class="stat-value">${tests.length?predictedPercentile(tests[0]):'—'}</div></div>
+
+    <div class="pill-row">
+      <div class="stat-pill"><span class="sp-icon">🏆</span><span class="sp-label">Highest Score</span><span class="sp-value">${highest ? `${highest.marks}/${highest.maxMarks}` : '—'}</span></div>
+      <div class="stat-pill"><span class="sp-icon">🎯</span><span class="sp-label">Last Test Score</span><span class="sp-value">${latest ? `${latest.marks}/${latest.maxMarks}` : '—'}</span></div>
+      <div class="stat-pill"><span class="sp-icon">📊</span><span class="sp-label">Average Accuracy</span><span class="sp-value">${avgAcc}${tests.length?'%':''}</span></div>
+      <div class="stat-pill"><span class="sp-icon">📈</span><span class="sp-label">Tests Logged</span><span class="sp-value">${tests.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">➗</span><span class="sp-label">Average Marks</span><span class="sp-value">${avgMarks}</span></div>
     </div>
+
     <div class="card" style="margin-bottom:16px;">
       <div class="card-title">${icon('analytics')} Marks & Accuracy Over Time</div>
       <canvas id="testChart" height="90"></canvas>
@@ -1646,6 +1895,7 @@ RENDERERS.tests = function(el){
       </table></div>
       <div style="font-size:10.5px; color:var(--text-3); margin-top:10px;">*This is a rough, illustrative estimate based on your own marks trend — not an official ${currentTrack()} prediction.</div>
     </div>
+    <div class="quote-flourish">🎯 Every test is a rehearsal — the real thing will feel familiar 🎯</div>
   `;
   renderTestChart(tests);
 };
@@ -1709,6 +1959,96 @@ function saveTest(){
   saveState(); closeModal(); renderView(); renderNav();
   addXP(25, 'Test analysed');
   toast('Test saved', `${t.subject} · ${t.marks}/${t.maxMarks}`, 'success');
+}
+
+/* ============================================================
+   VIEW: DOUBTS TRACKER
+   ============================================================ */
+function openDoubtCount(){ return state.doubts.filter(d=>d.status==='open').length; }
+let doubtFilterSubject = 'All';
+RENDERERS.doubts = function(el){
+  const subjects = ['All', ...Object.keys(state.syllabus)];
+  const all = state.doubts.filter(d => doubtFilterSubject==='All' || d.subject===doubtFilterSubject);
+  const open = all.filter(d=>d.status==='open').sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const resolved = all.filter(d=>d.status==='resolved').sort((a,b)=>(b.resolvedAt||'').localeCompare(a.resolvedAt||''));
+  const resolutionRate = state.doubts.length ? Math.round(resolved.length/state.doubts.length*100) : 0;
+
+  el.innerHTML = `
+    <div class="view-header"><div><div class="view-title">Doubts Tracker</div><div class="view-sub">Log anything you don't fully get — clear it with your teacher or coaching, then check it off.</div></div></div>
+
+    <div class="pill-row">
+      <div class="stat-pill"><span class="sp-icon">📎</span><span class="sp-label">Open Doubts</span><span class="sp-value">${open.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">✅</span><span class="sp-label">Resolved</span><span class="sp-value">${resolved.length}</span></div>
+      <div class="stat-pill"><span class="sp-icon">📈</span><span class="sp-label">Resolution Rate</span><span class="sp-value">${resolutionRate}%</span></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">📎 Log a new doubt</div>
+      <div class="grid grid-2">
+        <div class="field"><label>Subject</label><select id="doubt-subject">${Object.keys(state.syllabus).map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Chapter</label><select id="doubt-chapter"></select></div>
+      </div>
+      <div class="field"><label>What's the doubt?</label><textarea id="doubt-text" placeholder="e.g. Why does the sign flip when squaring both sides of this inequality?" style="min-height:70px;"></textarea></div>
+      <button class="btn btn-primary" onclick="addDoubt()">Add Doubt</button>
+    </div>
+
+    <div class="tabs">${subjects.map(s=>`<div class="tab-btn ${doubtFilterSubject===s?'active':''}" onclick="doubtFilterSubject='${s}'; renderView();">${s}</div>`).join('')}</div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">📎 Open (${open.length})</div>
+      ${open.length ? open.map(d=>`
+        <div class="notion-link-row">
+          <span class="nl-icon" style="background:var(--danger-dim);">📎</span>
+          <div class="nl-text">
+            <div class="nl-title">${escapeHtml(d.text)} <span class="tag ${SUBJECT_TAGCLASS[d.subject]}" style="margin-left:6px;">${d.subject.slice(0,3)}</span></div>
+            <div class="nl-sub">${escapeHtml(d.chapter)} · logged ${fmtDateShort(d.createdAt.slice(0,10))}</div>
+          </div>
+          <button class="btn btn-sm btn-success" onclick="resolveDoubt('${d.id}')">Resolve</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteDoubt('${d.id}')">✕</button>
+        </div>`).join('') : `<div class="empty-state"><b>No open doubts</b><p>Nice — you're all caught up.</p></div>`}
+    </div>
+    <div class="card">
+      <div class="card-title">✅ Resolved (${resolved.length})</div>
+      ${resolved.length ? resolved.slice(0,20).map(d=>`
+        <div class="notion-link-row" style="opacity:.6;">
+          <span class="nl-icon" style="background:var(--success-dim);">✅</span>
+          <div class="nl-text">
+            <div class="nl-title" style="text-decoration:line-through;">${escapeHtml(d.text)} <span class="tag ${SUBJECT_TAGCLASS[d.subject]}" style="margin-left:6px;">${d.subject.slice(0,3)}</span></div>
+            <div class="nl-sub">${escapeHtml(d.chapter)} · resolved ${fmtDateShort((d.resolvedAt||'').slice(0,10))}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="reopenDoubt('${d.id}')">Reopen</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteDoubt('${d.id}')">✕</button>
+        </div>`).join('') : `<div class="empty-state"><p>Resolved doubts will show here.</p></div>`}
+    </div>
+    <div class="quote-flourish">📎 A doubt cleared today is a mark saved on exam day 📎</div>
+  `;
+  const subjSel = document.getElementById('doubt-subject');
+  const fillChapters = ()=>{ document.getElementById('doubt-chapter').innerHTML = state.syllabus[subjSel.value].map(c=>`<option>${c}</option>`).join(''); };
+  subjSel.addEventListener('change', fillChapters); fillChapters();
+};
+function addDoubt(){
+  const subject = document.getElementById('doubt-subject').value;
+  const chapter = document.getElementById('doubt-chapter').value;
+  const text = document.getElementById('doubt-text').value.trim();
+  if (!text){ toast('Nothing to log','Write down what you\'re unsure about first.','danger'); return; }
+  state.doubts.push({ id: uid(), subject, chapter, text, status:'open', createdAt: new Date().toISOString(), resolvedAt: null });
+  saveState(); renderNav(); renderView();
+  toast('Doubt logged', chapter, 'brand', 2200);
+}
+function resolveDoubt(id){
+  const d = state.doubts.find(x=>x.id===id); if (!d) return;
+  d.status = 'resolved'; d.resolvedAt = new Date().toISOString();
+  addXP(8, 'Doubt resolved');
+  saveState(); renderNav(); renderView();
+}
+function reopenDoubt(id){
+  const d = state.doubts.find(x=>x.id===id); if (!d) return;
+  d.status = 'open'; d.resolvedAt = null;
+  saveState(); renderNav(); renderView();
+}
+function deleteDoubt(id){
+  state.doubts = state.doubts.filter(d=>d.id!==id);
+  saveState(); renderNav(); renderView();
 }
 
 /* ============================================================
@@ -2387,30 +2727,43 @@ function wireAuthScreen(){
   toggleLink.addEventListener('click', (e)=>{
     e.preventDefault();
     authMode = authMode==='login' ? 'register' : 'login';
-    document.getElementById('authTitle').textContent = authMode==='login' ? 'Sign in' : 'Create your account';
-    document.getElementById('authSubmitBtn').textContent = authMode==='login' ? 'Sign in' : 'Create account';
+    document.getElementById('authTitle').textContent = authMode==='login' ? 'Welcome Back 👋' : 'Create your account';
+    document.getElementById('authSubtitle').textContent = authMode==='login' ? 'Sign in to continue your journey' : 'Start tracking your prep in two minutes';
+    document.getElementById('authSubmitLabel').textContent = authMode==='login' ? 'Sign in' : 'Create account';
     document.getElementById('authToggleText').textContent = authMode==='login' ? "Don't have an account?" : 'Already have an account?';
-    toggleLink.textContent = authMode==='login' ? 'Create one' : 'Sign in';
+    toggleLink.textContent = authMode==='login' ? 'Create Account' : 'Sign in';
     document.getElementById('authError').style.display = 'none';
   });
+
+  const pwInput = document.getElementById('authPassword');
+  const pwToggle = document.getElementById('pwToggle');
+  pwToggle.addEventListener('click', ()=>{
+    const showing = pwInput.type === 'text';
+    pwInput.type = showing ? 'password' : 'text';
+    pwToggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+  });
+
   const submit = async ()=>{
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
+    const remember = document.getElementById('rememberMe').checked;
     const errEl = document.getElementById('authError');
     errEl.style.display = 'none';
     const btn = document.getElementById('authSubmitBtn');
-    btn.disabled = true; const originalLabel = btn.textContent; btn.textContent = 'Please wait…';
+    const labelEl = document.getElementById('authSubmitLabel');
+    const originalLabel = labelEl.textContent;
+    btn.disabled = true; labelEl.textContent = 'Please wait…';
     try{
       const path = authMode==='login' ? '/api/auth/login' : '/api/auth/register';
       const res = await apiCall(path, { method:'POST', body: JSON.stringify({ email, password }) });
-      setAuth(res.token, res.email);
+      setAuth(res.token, res.email, remember);
       document.getElementById('authOverlay').classList.remove('show');
       await afterAuth();
     }catch(e){
       errEl.textContent = e.message || 'Something went wrong.';
       errEl.style.display = 'block';
     }finally{
-      btn.disabled = false; btn.textContent = originalLabel;
+      btn.disabled = false; labelEl.textContent = originalLabel;
     }
   };
   document.getElementById('authSubmitBtn').addEventListener('click', submit);

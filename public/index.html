@@ -1876,24 +1876,28 @@ RENDERERS.tests = function(el){
       <canvas id="testChart" height="90"></canvas>
     </div>
     <div class="card">
-      <div class="card-title">Test History</div>
+      <div class="card-title">Test History <span style="font-size:10.5px; color:var(--text-3); font-weight:400; text-transform:none; margin-left:6px;">(click a row to log revision/analysis/confidence/mistake type)</span></div>
       <div class="table-wrap"><table class="data-table">
-        <thead><tr><th>Date</th><th>Subject</th><th>Chapter</th><th>Marks</th><th>Accuracy</th><th>Neg %</th><th>Speed/Q</th><th>${currentTrackConfig().scoreLabel}</th></tr></thead>
+        <thead><tr><th>Date</th><th>Subject</th><th>Chapter</th><th>Marks</th><th>Accuracy</th><th>Neg %</th><th>Rank</th><th>Review</th></tr></thead>
         <tbody>
           ${tests.length ? tests.map(t=>{ const m = computeTestMetrics(t); return `
-            <tr>
+            <tr style="cursor:pointer;" onclick="openTestReview('${t.id}')">
               <td>${fmtDateShort(t.date)}</td>
               <td><span class="tag ${SUBJECT_TAGCLASS[t.subject]}">${t.subject}</span></td>
               <td>${escapeHtml(t.chapter||'Mixed')}</td>
-              <td style="font-family:var(--font-mono)">${t.marks}</td>
+              <td style="font-family:var(--font-mono)">${t.marks}/${t.maxMarks}</td>
               <td style="font-family:var(--font-mono)">${m.accuracy.toFixed(1)}%</td>
               <td style="font-family:var(--font-mono); color:var(--danger)">${m.negPct.toFixed(1)}%</td>
-              <td style="font-family:var(--font-mono)">${m.speed.toFixed(1)}m</td>
-              <td style="font-family:var(--font-mono)">${predictedPercentile(t)}</td>
+              <td style="font-family:var(--font-mono); color:var(--text-2)">${t.rank ? `${t.rank}${t.rankOf?'/'+t.rankOf:''}` : '—'}</td>
+              <td>
+                <span class="tag ${t.revisionDone?'tag-success':'tag-neutral'}" style="margin-right:4px;" title="Revision Done?">${t.revisionDone?'✓':'○'} Rev</span>
+                <span class="tag ${t.analysisDone?'tag-success':'tag-neutral'}" title="Test Analysis Done?">${t.analysisDone?'✓':'○'} Analysis</span>
+                ${t.mistakeType ? `<span class="tag tag-danger" style="margin-left:4px;">${escapeHtml(t.mistakeType)}</span>` : ''}
+              </td>
             </tr>`; }).join('') : `<tr><td colspan="8"><div class="empty-state"><p>No tests logged yet.</p></div></td></tr>`}
         </tbody>
       </table></div>
-      <div style="font-size:10.5px; color:var(--text-3); margin-top:10px;">*This is a rough, illustrative estimate based on your own marks trend — not an official ${currentTrack()} prediction.</div>
+      <div style="font-size:10.5px; color:var(--text-3); margin-top:10px;">Predicted score index (${currentTrackConfig().scoreLabel.replace('*','')}) is a rough, illustrative estimate based on your own marks trend — not an official ${currentTrack()} prediction.</div>
     </div>
     <div class="quote-flourish">🎯 Every test is a rehearsal — the real thing will feel familiar 🎯</div>
   `;
@@ -1932,6 +1936,8 @@ function openAddTest(){
       <div class="field"><label>Wrong</label><input type="number" id="t-wrong" placeholder="e.g. 10"></div>
       <div class="field"><label>Skipped</label><input type="number" id="t-skipped" placeholder="e.g. 10"></div>
       <div class="field"><label>Time Taken (minutes)</label><input type="number" id="t-time" value="180"></div>
+      <div class="field"><label>Rank (optional)</label><input type="text" id="t-rank" placeholder="e.g. 45"></div>
+      <div class="field"><label>Out of (optional)</label><input type="text" id="t-rankof" placeholder="e.g. 100"></div>
     </div>
     <button class="btn btn-primary btn-block" onclick="saveTest()">Save Test Result</button>
   `, 'lg');
@@ -1949,6 +1955,12 @@ function saveTest(){
     wrong: parseInt(document.getElementById('t-wrong').value) || 0,
     skipped: parseInt(document.getElementById('t-skipped').value) || 0,
     timeMin: parseFloat(document.getElementById('t-time').value) || 180,
+    rank: document.getElementById('t-rank').value.trim(),
+    rankOf: document.getElementById('t-rankof').value.trim(),
+    revisionDone: false,
+    analysisDone: false,
+    confidence: '',
+    mistakeType: '',
     completed: true,
   };
   state.tests.push(t);
@@ -1959,6 +1971,49 @@ function saveTest(){
   saveState(); closeModal(); renderView(); renderNav();
   addXP(25, 'Test analysed');
   toast('Test saved', `${t.subject} · ${t.marks}/${t.maxMarks}`, 'success');
+}
+
+const MISTAKE_TYPES = ['Silly Mistake','Concept Gap','Time Pressure','Calculation Error','Misread Question','Not Attempted','Overconfidence','Other'];
+const CONFIDENCE_LEVELS = ['Low','Medium','High'];
+function openTestReview(id){
+  const t = state.tests.find(x=>x.id===id); if (!t) return;
+  const m = computeTestMetrics(t);
+  openModal(`
+    <div class="modal-head"><h3>${escapeHtml(t.subject)} · ${fmtDateShort(t.date)}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="pill-row" style="margin-bottom:18px;">
+      <div class="stat-pill"><span class="sp-icon">📝</span><span class="sp-label">Marks</span><span class="sp-value">${t.marks}/${t.maxMarks}</span></div>
+      <div class="stat-pill"><span class="sp-icon">🎯</span><span class="sp-label">Accuracy</span><span class="sp-value">${m.accuracy.toFixed(1)}%</span></div>
+      ${t.rank ? `<div class="stat-pill"><span class="sp-icon">🏅</span><span class="sp-label">Rank</span><span class="sp-value">${escapeHtml(t.rank)}${t.rankOf?'/'+escapeHtml(t.rankOf):''}</span></div>` : ''}
+    </div>
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-weight:500; margin-bottom:12px;">
+      <input type="checkbox" class="chk" id="rev-revisionDone" ${t.revisionDone?'checked':''}> Revision Done?
+    </label>
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-weight:500; margin-bottom:16px;">
+      <input type="checkbox" class="chk" id="rev-analysisDone" ${t.analysisDone?'checked':''}> Test Analysis Done?
+    </label>
+    <div class="field"><label>Confidence After Test?</label>
+      <select id="rev-confidence">
+        <option value="">— Select —</option>
+        ${CONFIDENCE_LEVELS.map(c=>`<option ${t.confidence===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Mistake Type?</label>
+      <select id="rev-mistakeType">
+        <option value="">— Select —</option>
+        ${MISTAKE_TYPES.map(mt=>`<option ${t.mistakeType===mt?'selected':''}>${mt}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveTestReview('${id}')">Save</button>
+  `);
+}
+function saveTestReview(id){
+  const t = state.tests.find(x=>x.id===id); if (!t) return;
+  t.revisionDone = document.getElementById('rev-revisionDone').checked;
+  t.analysisDone = document.getElementById('rev-analysisDone').checked;
+  t.confidence = document.getElementById('rev-confidence').value;
+  t.mistakeType = document.getElementById('rev-mistakeType').value;
+  saveState(); closeModal(); renderView();
+  toast('Review saved', '', 'success', 2000);
 }
 
 /* ============================================================
